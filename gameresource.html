@@ -1,0 +1,47 @@
+<!-- CVSS example : GAME RESOURCE -->
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>게임 리소스</title>
+		<meta charset="utf8">
+		<script src="./cvss.0.0.1.js"></script>
+	</head>
+	<body>
+		<canvas width=500 height=1000 id="window"></canvas>
+		<script>
+			var board=new Canvas("#window");
+			board.createElement("object",{
+				type:"box",width:480,height:60,onlyBaseElement:true,
+				background:"#aaa",backgroundImage:"https://s-media-cache-ak0.pinimg.com/736x/8f/ca/9a/8fca9ac647f3f3f046b244c5aa22be07.jpg",border:"1px solid #ddd"
+			});
+			board.element("object").hover(function(e,key){
+				this.element(key).cvss("border","1px solid red");
+				toggle*=-1;
+			},function(e,key){
+				this.element(key).cvss("border","none");
+				toggle*=-1;
+			});
+
+			for (i=1; i<=4; i++) {
+				board.createElement("sprite"+i,{baseElement:"object",x:10,y:30+200*(i-1),backgroundImageY:-60*(i-1)});
+				board.createElement("sprite"+i+"_moving",{baseElement:"object",x:10,y:100+200*(i-1),backgroundImageY:-60*(i-1)});
+			}
+			setInterval(function(){splitMotion("sprite1_moving",{width:60,height:0});},300);
+			setInterval(function(){splitMotion("sprite2_moving",{width:60,height:0});},300);
+			setInterval(function(){splitMotion("sprite3_moving",{width:60,height:0});},300);
+			setInterval(function(){splitMotion("sprite4_moving",{width:60,height:0});},300);
+
+			var toggle=1;
+			function splitMotion(key,split){
+				var elementInfo=board.element(key).getInfo();
+				if(elementInfo.backgroundImageX*toggle+split.width>=elementInfo.$backgroundImage.width){
+					board.element(key).cvss('backgroundImageX',0);
+					return 0;
+				}
+				board.element(key).cvss({backgroundImageX:"+="+toggle*split.width+"px"});
+			}
+
+
+		</script>
+	</body>
+</html>
