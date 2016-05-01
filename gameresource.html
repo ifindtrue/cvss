@@ -4,7 +4,7 @@
 	<head>
 		<title>게임 리소스</title>
 		<meta charset="utf8">
-		<script src="./cvss.0.0.1.js"></script>
+		<script src="./js/cvss.0.1.js"></script>
 	</head>
 	<body>
 		<canvas width=500 height=1000 id="window"></canvas>
@@ -26,22 +26,20 @@
 				board.createElement("sprite"+i,{baseElement:"object",x:10,y:30+200*(i-1),backgroundImageY:-60*(i-1)});
 				board.createElement("sprite"+i+"_moving",{baseElement:"object",x:10,y:100+200*(i-1),backgroundImageY:-60*(i-1)});
 			}
-			setInterval(function(){splitMotion("sprite1_moving",{width:60,height:0});},300);
-			setInterval(function(){splitMotion("sprite2_moving",{width:60,height:0});},300);
-			setInterval(function(){splitMotion("sprite3_moving",{width:60,height:0});},300);
-			setInterval(function(){splitMotion("sprite4_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite1_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite2_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite3_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite4_moving",{width:60,height:0});},300);
 
-			var toggle=1;
-			function splitMotion(key,split){
+			var toggle=-1;
+			function spriteMotion(key,sprite){
 				var elementInfo=board.element(key).getInfo();
-				if(elementInfo.backgroundImageX*toggle+split.width>=elementInfo.$backgroundImage.width){
+				if(elementInfo.backgroundImageX*toggle+sprite.width>=elementInfo.$backgroundImage.width){
 					board.element(key).cvss('backgroundImageX',0);
 					return 0;
 				}
-				board.element(key).cvss({backgroundImageX:"+="+toggle*split.width+"px"});
+				board.element(key).cvss({backgroundImageX:"+="+toggle*sprite.width+"px"});
 			}
-
-
 		</script>
 	</body>
 </html>

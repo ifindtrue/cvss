@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CvSS - Canvas Style Sheet</title>
+		<meta charset="utf8">
+ 	   <link href="css/bootstrap.css" rel="stylesheet">
+ 	   <script src="./js/cvss.0.1.js"></script>
+	</head>
+	<body>
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" href="./index.html">CVSS <small>0.1 <span class="glyphicon glyphicon-pencil"></span></small></a>
+		    </div>
+		    <!-- Collect the nav links, forms, and other content for toggling -->
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <ul class="nav navbar-nav">
+		        <li><a href="./index.html">Getting started <span class="sr-only">(current)</span></a></li>
+		        <li class="active"><a href="./howtouse.html">How to use</a></li>
+		      </ul>
+		      <ul class="nav navbar-nav navbar-right">
+		        <li><a href="#">Github</a></li>
+		      </ul>
+		    </div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		</nav>
+		<section class="container">
+			<p><u><b><span class="text-info">zindex</span> , <span class="text-info">opacity</span> , <span class="text-info">cursor</span> 같은 속성은 타입에 상관없이 모두적용되는 속성입니다.</b></u></p>
+			<h2><b>타입</b> <small>cvss의 객체는 <b>block</b>,<b>path</b>,<b>circle</b>,<b>text</b>로 나뉩니다.</small></h2>
+			<p>각 타입별로 적용될 수 있는 속성값이 다를 수 있습니다.</br/>현재 0.1버전에서는 path,circle,text의 개발이 충분히 되지않았습니다.</p>
+			<article class="alert alert-warning"><b>cvss의 모든속성의글자들은 대소문자를 구별하여야합니다.</b><br/>cvss는 기본적으로 낙타표기법을 사용하고있습니다.</article>
+			<hr/>
+			<section name="block">
+				<h2><a href="#">block</a> <small>:가장 기본적인 elementType</small></h2>
+				<p>
+					block 타입은 <b>type 속성</b>이 입력되지않았을 때 자동으로 적용되는 cvss는 가장 기본적인 속성입니다.
+				</p>
+				<h2>background <small>:객체의 배경색 설정</small></h3>	
+				<canvas width=300 height=100 id="sample1"></canvas>				
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample1<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample1"</span>);
+sample1.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,background:<span style="color:#c03030">"orange"</span>})
+</pre>
+				<p class="text-info"><b>.createElement({element1:{...},element2:{...}});의 형식도 가능</b></p>
+				<h2>x,y <small>:좌표설정</small></h3>
+				<canvas width=300 height=100 id="sample2"></canvas>				
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample2<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample2"</span>);
+sample2.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,background:<span style="color:#c03030">"orange"</span>,x:<span style="color:#0080a0">50</span>,y:<span style="color:#0080a0">50</span>});
+</pre>
+				<p>x,y 속성을 통해 엘레먼트의 위치를 지정해줄수 있습니다. 또 block과 circle에 적용되는 <b class="text-info">origin 속성</b>은 주로 퍼센테이지(일반정수도 가능)을 통해 x,y좌표에 객체의 어느부분이 위치할 것인지 지정해줄수 있습니다.<br/><br/>또한 x,y속성에 <b>+=,-= 같은 증감연산자를 사용하여 기존의 값을 증감 할 수 있습니다.</b></p>
+				<canvas width=300 height=100 id="sample3"></canvas><br/>
+				<div class="btn btn-default" id="sample3Btn">x+10</div>
+				<div class="btn btn-default" id="sample3Btn2">x-10</div>
+<pre style="background:#f1f1f1;color:#000">
+<span style="color:#a08000">var</span> sample3<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample3"</span>);
+sample3.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,background:<span style="color:#c03030">"orange"</span>});
+
+document.getElementById(<span style="color:#c03030">"sample3Btn"</span>).addEventListener(<span style="color:#c03030">"click"</span>,<span style="color:#a08000">function</span>(){
+    sample3.element(<span style="color:#c03030">"box"</span>).cvss(<span style="color:#c03030">"x"</span>,<span style="color:#c03030">"+=10px"</span>);
+});
+document.getElementById(<span style="color:#c03030">"sample3Btn2"</span>).addEventListener(<span style="color:#c03030">"click"</span>,<span style="color:#a08000">function</span>(){
+    sample3.element(<span style="color:#c03030">"box"</span>).cvss(<span style="color:#c03030">"x"</span>,<span style="color:#c03030">"-=10px"</span>);
+});
+</pre>
+				<p>
+				참고로 <b>.element(객체이름)</b>를 통해 element를 지정하는 하는 것이 가능하고, 그 뒤에 바로 온 <b>.cvss(속성이름,값);</b>으로 지정한 element의 속성을 제어할 수 있습니다.<br/>
+				.cvss는 <b>.cvss(속성이름,값);</b> 형식뿐만아니라 <b>.cvss({속석이름:값,속성이름:값...});</b>와 같은 형식을 통해 일괄처리도 가능합니다.
+				</p>
+				<h2>width,height <small>:가로길이,세로길이 설정</small></h2>
+				<canvas width=300 height=100 id="sample4"></canvas>
+				<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample4<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample4"</span>);
+sample4.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,background:<span style="color:#c03030">"red"</span>,width:<span style="color:#0080a0">50</span>,height:<span style="color:#c03030">"100%"</span>});
+</pre>
+				<p>
+				이 속성도 증감연산자(+=,-=)가 적용될 수 있습니다.<br/>또 흥미로운것은 canvas요소의 가로,세로길이에 대해 퍼센이지가 적용될 수있다는 점입니다.<br/>
+				<b class="text-info">maxWidth,minWidth,maxHeight,minHeight 를 통하여 최대최소길이를 지정가능 합니다.</b>
+				</p>
+				<h2>backgroundImage <small>:이미지를 불러옵니다.</small></h2>
+				<canvas width=500 height=900 id="sample5"></canvas>
+				<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample5<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample5"</span>);
+sample5.createElement(<span style="color:#c03030">"object"</span>,{
+    type:<span style="color:#c03030">"box"</span>,width:<span style="color:#0080a0">480</span>,height:<span style="color:#0080a0">60</span>,onlyBaseElement:true,
+    background:<span style="color:#c03030">"#aaa"</span>,backgroundImage:<span style="color:#c03030">"https://s-media-cache-ak0.pinimg.com/736x/8f/ca/9a/8fca9ac647f3f3f046b244c5aa22be07.jpg"</span>,border:<span style="color:#c03030">"1px solid #ddd"</span>
+});
+sample5.element(<span style="color:#c03030">"object"</span>).hover(<span style="color:#a08000">function</span>(e,key){
+    this.element(key).cvss(<span style="color:#c03030">"border"</span>,<span style="color:#c03030">"1px solid red"</span>);
+    toggle<span style="color:#2060a0">*</span><span style="color:#2060a0">=</span><span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>;
+},<span style="color:#a08000">function</span>(e,key){
+    this.element(key).cvss(<span style="color:#c03030">"border"</span>,<span style="color:#c03030">"none"</span>);
+    toggle<span style="color:#2060a0">*</span><span style="color:#2060a0">=</span><span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>;
+});
+
+<span style="color:#2060a0">for</span> (i<span style="color:#2060a0">=</span><span style="color:#0080a0">1</span>; i<span style="color:#2060a0">&lt;=</span><span style="color:#0080a0">4</span>; i<span style="color:#2060a0">++</span>) {
+    sample5.createElement(<span style="color:#c03030">"sprite"</span><span style="color:#2060a0">+</span>i,{baseElement:<span style="color:#c03030">"object"</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">30</span><span style="color:#2060a0">+</span><span style="color:#0080a0">200</span><span style="color:#2060a0">*</span>(i<span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>),backgroundImageY:<span style="color:#2060a0">-</span><span style="color:#0080a0">60</span><span style="color:#2060a0">*</span>(i<span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>)});
+    sample5.createElement(<span style="color:#c03030">"sprite"</span><span style="color:#2060a0">+</span>i<span style="color:#2060a0">+</span><span style="color:#c03030">"_moving"</span>,{baseElement:<span style="color:#c03030">"object"</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">100</span><span style="color:#2060a0">+</span><span style="color:#0080a0">200</span><span style="color:#2060a0">*</span>(i<span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>),backgroundImageY:<span style="color:#2060a0">-</span><span style="color:#0080a0">60</span><span style="color:#2060a0">*</span>(i<span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>)});
+}
+setInterval(<span style="color:#a08000">function</span>(){spriteMotion(<span style="color:#c03030">"sprite1_moving"</span>,{width:<span style="color:#0080a0">60</span>,height:<span style="color:#0080a0">0</span>});},<span style="color:#0080a0">300</span>);
+setInterval(<span style="color:#a08000">function</span>(){spriteMotion(<span style="color:#c03030">"sprite2_moving"</span>,{width:<span style="color:#0080a0">60</span>,height:<span style="color:#0080a0">0</span>});},<span style="color:#0080a0">300</span>);
+setInterval(<span style="color:#a08000">function</span>(){spriteMotion(<span style="color:#c03030">"sprite3_moving"</span>,{width:<span style="color:#0080a0">60</span>,height:<span style="color:#0080a0">0</span>});},<span style="color:#0080a0">300</span>);
+setInterval(<span style="color:#a08000">function</span>(){spriteMotion(<span style="color:#c03030">"sprite4_moving"</span>,{width:<span style="color:#0080a0">60</span>,height:<span style="color:#0080a0">0</span>});},<span style="color:#0080a0">300</span>);
+
+<span style="color:#a08000">var</span> toggle<span style="color:#2060a0">=</span><span style="color:#2060a0">-</span><span style="color:#0080a0">1</span>;
+<span style="color:#a08000">function</span> <span style="color:maroon">spriteMotion</span>(key,sprite){
+    <span style="color:#a08000">var</span> elementInfo<span style="color:#2060a0">=</span>sample5.element(key).getInfo();
+    <span style="color:#2060a0">if</span>(elementInfo.backgroundImageX<span style="color:#2060a0">*</span>toggle<span style="color:#2060a0">+</span>sprite.width<span style="color:#2060a0">>=</span>elementInfo.<span style="color:#2060a0">$</span>backgroundImage.width){
+        sample5.element(key).cvss(<span style="color:#c03030">'backgroundImageX'</span>,<span style="color:#0080a0">0</span>);
+        <span style="color:#2060a0">return</span> <span style="color:#0080a0">0</span>;
+    }
+    sample5.element(key).cvss({backgroundImageX:<span style="color:#c03030">"+="</span><span style="color:#2060a0">+</span>toggle<span style="color:#2060a0">*</span>sprite.width<span style="color:#2060a0">+</span><span style="color:#c03030">"px"</span>});
+}
+</pre>
+				<p>
+					<b class="text-primary">backgroundImage:"src repeatType x y"	</b>의 형식을 취하고 있는 이 속성은, <b>src의 값에 이미지의 링크</b>를, <br/><b>repeatType(no-repeat,repeat-x,repeat-y,repeat)은 블록내에서 이미지의 출력패턴의 결정</b>을,<br/><b>x,y는 박스내에서 출력된 이미지의 좌표를 결정합니다. (증감연산자 사용 가능)</b><br/>
+					덭붙혀 설명하자면 sec,repeatType,x와y의 값은 <b class="text-info">각각 backgroundImageSrc,backgroundImagePattern,backgroundImageX 와 backgroundImageY</b>라는 속성으로 따로 관리가능합니다.<br/>
+					또 이미지가 로드되면 element속성에 $backgroundImage 라는 속성이 생기는데 이속성의 값을 통해 불러온 이미지의 실제 크기를 알 수 있습니다.
+				</p>
+				<h2>border <small>:테두리 설정</small></h2>
+				<canvas width=500 height=100 id="sample6"></canvas>
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample6<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample6"</span>);
+sample6.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">10</span>,border:<span style="color:#c03030">"5px solid orange"</span>});
+</pre>
+			<p><b class="text-primary">background:"px borderType borderColor"</b> 형식으로 px,borderColor 은 각각 <b class="text-info">borderWidth(증감연산자 가능),borderColor</b>라는 속성으로 따로 관리가 가능합니다.
+			<h2>rotate <small>:회전</small></h2><b class="text-info">rotate:각도</b>의 형식으로 rotateOriginX,rotateOriginY을 중심으로 지정한각도만큼 회전시킨다.<br/>rotateOriginX,rotateOriginY는 퍼센테이지를 적용할수있는데 두속성다 50%의 값이라면 사각형의 중심을 기준으로 회전을한다.</p>
+			</section>
+			<h2><a href="#">path</a> <small>:폴리곤을 그릴 수 있는 타입</small></h2>
+			<h2>line <small>:선긋기</small></h2>
+			<canvas width=500 height=100 id="sample7"></canvas>
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample7<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample7"</span>);
+sample7.createElement(<span style="color:#c03030">"line"</span>,{type:<span style="color:#c03030">"path"</span>,line:[[<span style="color:#0080a0">0</span>,<span style="color:#0080a0">0</span>],[<span style="color:#0080a0">30</span>,<span style="color:#0080a0">20</span>],[<span style="color:#0080a0">100</span>,<span style="color:#0080a0">100</span>]],background:<span style="color:#c03030">"orange"</span>,borderColor:<span style="color:#c03030">"red"</span>});
+</pre>
+			<p>
+				line속성은 2차원 배열형식이고 [점][x,y] 이런식으로 구성되어 있다.<br/>
+				테두리 색과 굵기는 border 즉 borderWidth,borderColor 을 통해 지정가능하다.
+			</p>
+			<h2><a href="#">circle</a> <small>:원과 타원을 그릴 수 있는 타입</small></h2>
+			<h2>r <small>:원의 기본 요소</small></h2>
+			<canvas width=500 height=100 id="sample8"></canvas>
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample8<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample8"</span>);
+sample8.createElement(<span style="color:#c03030">"circle1"</span>,{type:<span style="color:#c03030">"circle"</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">0</span>,r:<span style="color:#c03030">"10"</span>,background:<span style="color:#c03030">"orange"</span>,origin:<span style="color:#c03030">"0% -50%"</span>});
+sample8.createElement(<span style="color:#c03030">"circle2"</span>,{type:<span style="color:#c03030">"circle"</span>,x:<span style="color:#0080a0">30</span>,y:<span style="color:#0080a0">0</span>,r:<span style="color:#c03030">"10 30"</span>,background:<span style="color:#c03030">"orange"</span>,origin:<span style="color:#c03030">"0% -50%"</span>});
+sample8.createElement(<span style="color:#c03030">"circle3"</span>,{type:<span style="color:#c03030">"circle"</span>,x:<span style="color:#0080a0">50</span>,y:<span style="color:#0080a0">0</span>,r:<span style="color:#c03030">"10"</span>,r2:<span style="color:#0080a0">50</span>,background:<span style="color:#c03030">"orange"</span>,origin:<span style="color:#c03030">"0% -50%"</span>});
+</pre>
+			<p>
+				r은 r1,r2 로 나뉘는데 r1은 가로 반지름 r2는 세로반지름이다. 이 속성들을 통해 타원을 만들 수 있다.
+			</p>
+			<h2><a href="#">text</a> <small>:글자를 적을 수 있는 타입</small></h2>
+			<h2>content <small>:글자내용</small></h2>
+			<canvas width=500 height=100 id="sample9"></canvas>
+			<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample9<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample9"</span>);
+sample9.createElement(<span style="color:#c03030">"text"</span>,{type:<span style="color:#c03030">"text"</span>,content:<span style="color:#c03030">"텍스트"</span>,fontFamily:<span style="color:#c03030">"굴림"</span>,fontSize:<span style="color:#0080a0">30</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">50</span>});
+</pre>
+<hr/>
+			<h2><b>이벤트</b></h2>
+			<p>
+			엘레먼트 이벤트속성에는 click,dblclick,dragstart,drag,drop,hover,mousein,mouseout,mousedown,mouseup 가있다.<br/>
+			사용방법은 <b class="text-info">canvas.element(객체이름).<mark>eventType</mark>(function(<i>이벤트객체</i>,<i>이벤트엘레먼트이름</i>){}/*hoverevent*/,function(){});</b><br/>
+			캔버스 자체의 이벤트타입에는 mousemove,mousedown,mouseup 정도가있는데<br/>
+			사용방법은 <b class="text-info">canvas.element(canvas).<mark>eventType</mark>=function(e){}</b> 와 같다.
+			</p>
+			<canvas width=500 height=100 id="sample10"></canvas>
+	<pre style="background:#f1f1f1;color:#000">
+<span style="color:#a08000">var</span> sample10<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample10"</span>);
+sample10.createElement(<span style="color:#c03030">"path"</span>,{type:<span style="color:#c03030">"path"</span>,line:[[<span style="color:#0080a0">10</span>,<span style="color:#0080a0">20</span>],[<span style="color:#0080a0">300</span>,<span style="color:#0080a0">30</span>],[<span style="color:#0080a0">20</span>,<span style="color:#0080a0">100</span>],[<span style="color:#0080a0">50</span>,<span style="color:#0080a0">30</span>]],cursor:<span style="color:#c03030">"pointer"</span>});
+sample10.element(<span style="color:#c03030">"path"</span>).hover(<span style="color:#a08000">function</span>(e,key){
+    sample10.element(key).cvss({background:<span style="color:#c03030">"red"</span>});
+},<span style="color:#a08000">function</span>(e,key){
+    sample10.element(key).cvss({background:<span style="color:#c03030">"none"</span>});
+});
+</pre>
+		
+		</section>
+		<script>
+			var sample1=new Canvas("#sample1");
+			sample1.createElement("box",{type:"block",background:"orange"});
+
+			var sample2=new Canvas("#sample2");
+			sample2.createElement("box",{type:"block",background:"orange",x:50,y:50});
+
+			var sample3=new Canvas("#sample3");
+			sample3.createElement("box",{type:"block",background:"orange"});
+			document.getElementById("sample3Btn").addEventListener("click",function(){
+				sample3.element("box").cvss("x","+=10px");
+			});
+			document.getElementById("sample3Btn2").addEventListener("click",function(){
+				sample3.element("box").cvss("x","-=10px");
+			});
+
+			var sample4=new Canvas("#sample4");
+			sample4.createElement("box",{type:"block",background:"red",width:50,height:"100%"});
+
+			var sample5=new Canvas("#sample5");
+			sample5.createElement("object",{
+				type:"box",width:480,height:60,onlyBaseElement:true,
+				background:"#aaa",backgroundImage:"https://s-media-cache-ak0.pinimg.com/736x/8f/ca/9a/8fca9ac647f3f3f046b244c5aa22be07.jpg",border:"1px solid #ddd"
+			});
+			sample5.element("object").hover(function(e,key){
+				this.element(key).cvss("border","1px solid red");
+				toggle*=-1;
+			},function(e,key){
+				this.element(key).cvss("border","none");
+				toggle*=-1;
+			});
+
+			for (i=1; i<=4; i++) {
+				sample5.createElement("sprite"+i,{baseElement:"object",x:10,y:30+200*(i-1),backgroundImageY:-60*(i-1)});
+				sample5.createElement("sprite"+i+"_moving",{baseElement:"object",x:10,y:100+200*(i-1),backgroundImageY:-60*(i-1)});
+			}
+			setInterval(function(){spriteMotion("sprite1_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite2_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite3_moving",{width:60,height:0});},300);
+			setInterval(function(){spriteMotion("sprite4_moving",{width:60,height:0});},300);
+
+			var toggle=-1;
+			function spriteMotion(key,sprite){
+				var elementInfo=sample5.element(key).getInfo();
+				if(elementInfo.backgroundImageX*toggle+sprite.width>=elementInfo.$backgroundImage.width){
+					sample5.element(key).cvss('backgroundImageX',0);
+					return 0;
+				}
+				sample5.element(key).cvss({backgroundImageX:"+="+toggle*sprite.width+"px"});
+			}
+
+			var sample6=new Canvas("#sample6");
+			sample6.createElement("box",{type:"block",x:10,y:10,border:"5px solid orange"});
+
+			var sample7=new Canvas("#sample7");
+			sample7.createElement("line",{type:"path",line:[[0,0],[30,20],[100,100]],background:"orange",borderColor:"red"});
+
+			var sample8=new Canvas("#sample8");
+			sample8.createElement("circle1",{type:"circle",x:10,y:0,r:"10",background:"orange",origin:"0% -50%"});
+			sample8.createElement("circle2",{type:"circle",x:30,y:0,r:"10 30",background:"orange",origin:"0% -50%"});
+			sample8.createElement("circle3",{type:"circle",x:50,y:0,r:"10",r2:50,background:"orange",origin:"0% -50%"});
+
+			var sample9=new Canvas("#sample9");
+			sample9.createElement("text",{type:"text",content:"텍스트",fontFamily:"굴림",fontSize:30,x:10,y:50});
+
+			var sample10=new Canvas("#sample10");
+			sample10.createElement("path",{type:"path",line:[[10,20],[300,30],[20,100],[50,30]],cursor:"pointer"});
+			sample10.element("path").hover(function(e,key){
+				sample10.element(key).cvss({background:"red"});
+			},function(e,key){
+				sample10.element(key).cvss({background:"none"});
+			});
+		</script>
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	    <!-- Include all compiled plugins (below), or include individual files as needed -->
+	    <script src="js/bootstrap.min.js"></script>
+	</body>
+</html>
