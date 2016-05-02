@@ -4,7 +4,7 @@
 		<title>CvSS - Canvas Style Sheet</title>
 		<meta charset="utf8">
  	   <link href="css/bootstrap.css" rel="stylesheet">
- 	   <script src="./js/cvss.0.1.min.js"></script>
+ 	   <script src="./js/cvss.0.1.js"></script>
 	</head>
 	<body>
 		<nav class="navbar navbar-default">
@@ -46,7 +46,15 @@
 <pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample1<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample1"</span>);
 sample1.createElement(<span style="color:#c03030">"box"</span>,{type:<span style="color:#c03030">"block"</span>,background:<span style="color:#c03030">"orange"</span>})
 </pre>
-				<p class="text-info"><b>.createElement({element1:{...},element2:{...}});의 형식도 가능</b></p>
+				<blockquote>
+					<p>
+						<b class="text-primary">객체 생성</b>
+						<ul><li><b class="text-info">.createElement({element1:{...},element2:{...}});</b></li><li><b class="text-info">.element(객체이름).create({속성...});</b></li></ul><br/>
+
+						<b class="text-primary">객체 삭제</b>
+						<ul><li><b class="text-info">.element(객체이름).remove();</b></li></ul><br/>
+					</p>
+				</blockquote>
 				<h2>x,y <small>:좌표설정</small></h3>
 				<canvas width=300 height=100 id="sample2"></canvas>				
 <pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample2<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample2"</span>);
@@ -67,10 +75,17 @@ document.getElementById(<span style="color:#c03030">"sample3Btn2"</span>).addEve
     sample3.element(<span style="color:#c03030">"box"</span>).cvss(<span style="color:#c03030">"x"</span>,<span style="color:#c03030">"-=10px"</span>);
 });
 </pre>
-				<p>
-				참고로 <b>.element(객체이름)</b>를 통해 element를 지정하는 하는 것이 가능하고, 그 뒤에 바로 온 <b>.cvss(속성이름,값);</b>으로 지정한 element의 속성을 제어할 수 있습니다.<br/>
-				.cvss는 <b>.cvss(속성이름,값);</b> 형식뿐만아니라 <b>.cvss({속석이름:값,속성이름:값...});</b>와 같은 형식을 통해 일괄처리도 가능합니다.
-				</p>
+<blockquote class="text">
+		<p>.element(객체이름)</b>를 통해 element를 지정하는 하는 것이 가능하고, 그 뒤에 바로 온 
+	<ul>
+	<li><b class="text-info">.cvss(속성이름,값)</b>의 형태로 지정한 element의 속성을 제어할 수 있습니다.</li>
+	<li>.cvss는 <b>.cvss(속성이름,값);</b> 형식뿐만아니라 <b class="text-info">.cvss({속석이름:값,속성이름:값...});</b>와 같은 형식을 통해 <u>일괄처리도 가능</u>합니다.</li>
+	<li><b class="text-danger">cvss(속성이름)</b> 을 이용하여 엘레먼트의 속성값을 불러올수 있습니다. <small>.getInfo(); 을 통해서는 엘레먼트의 모든 속성과 그값들을 object 형태로 불러올 수 있습니다.</small></li>
+	</ul>
+	</p>
+</blockquote>
+
+				</div>
 				<h2>width,height <small>:가로길이,세로길이 설정</small></h2>
 				<canvas width=300 height=100 id="sample4"></canvas>
 				<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample4<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample4"</span>);
@@ -128,6 +143,7 @@ sample6.createElement(<span style="color:#c03030">"box"</span>,{type:<span style
 			<p><b class="text-primary">background:"px borderType borderColor"</b> 형식으로 px,borderColor 은 각각 <b class="text-info">borderWidth(증감연산자 가능),borderColor</b>라는 속성으로 따로 관리가 가능합니다.
 			<h2>rotate <small>:회전</small></h2><b class="text-info">rotate:각도</b>의 형식으로 rotateOriginX,rotateOriginY을 중심으로 지정한각도만큼 회전시킨다.<br/>rotateOriginX,rotateOriginY는 퍼센테이지를 적용할수있는데 두속성다 50%의 값이라면 사각형의 중심을 기준으로 회전을한다.</p>
 			</section>
+<hr/>
 			<h2><a href="#">path</a> <small>:폴리곤을 그릴 수 있는 타입</small></h2>
 			<h2>line <small>:선긋기</small></h2>
 			<canvas width=500 height=100 id="sample7"></canvas>
@@ -138,6 +154,7 @@ sample7.createElement(<span style="color:#c03030">"line"</span>,{type:<span styl
 				line속성은 2차원 배열형식이고 [점][x,y] 이런식으로 구성되어 있다.<br/>
 				테두리 색과 굵기는 border 즉 borderWidth,borderColor 을 통해 지정가능하다.
 			</p>
+<hr/>
 			<h2><a href="#">circle</a> <small>:원과 타원을 그릴 수 있는 타입</small></h2>
 			<h2>r <small>:원의 기본 요소</small></h2>
 			<canvas width=500 height=100 id="sample8"></canvas>
@@ -149,6 +166,8 @@ sample8.createElement(<span style="color:#c03030">"circle3"</span>,{type:<span s
 			<p>
 				r은 r1,r2 로 나뉘는데 r1은 가로 반지름 r2는 세로반지름이다. 이 속성들을 통해 타원을 만들 수 있다.
 			</p>
+<hr/>
+
 			<h2><a href="#">text</a> <small>:글자를 적을 수 있는 타입</small></h2>
 			<h2>content <small>:글자내용</small></h2>
 			<canvas width=500 height=100 id="sample9"></canvas>
@@ -156,14 +175,15 @@ sample8.createElement(<span style="color:#c03030">"circle3"</span>,{type:<span s
 sample9.createElement(<span style="color:#c03030">"text"</span>,{type:<span style="color:#c03030">"text"</span>,content:<span style="color:#c03030">"텍스트"</span>,fontFamily:<span style="color:#c03030">"굴림"</span>,fontSize:<span style="color:#0080a0">30</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">50</span>});
 </pre>
 <hr/>
-			<h2><b>이벤트</b></h2>
+			<h2><b class="text-info">이벤트</b></h2>
 			<p>
 			엘레먼트 이벤트속성에는 click,dblclick,dragstart,drag,drop,hover,mousein,mouseout,mousedown,mouseup 가있다.<br/>
-			사용방법은 <b class="text-info">canvas.element(객체이름).<mark>eventType</mark>(function(<i>이벤트객체</i>,<i>이벤트엘레먼트이름</i>){}/*hoverevent*/,function(){});</b><br/>
+			사용방법은 <b class="text-info">canvas.element(객체이름).<mark>eventType</mark>(function(<i>이벤트객체</i>,<i>이벤트대상객체이름</i>){}/*hoverevent*/,function(){});</b><br/>
 			캔버스 자체의 이벤트타입에는 mousemove,mousedown,mouseup 정도가있는데<br/>
 			사용방법은 <b class="text-info">canvas.element(canvas).<mark>eventType</mark>=function(e){}</b> 와 같다.
 			</p>
 			<canvas width=500 height=100 id="sample10"></canvas>
+			<br/><small>도형안에 마우스를 올려보세요</small>
 	<pre style="background:#f1f1f1;color:#000">
 <span style="color:#a08000">var</span> sample10<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample10"</span>);
 sample10.createElement(<span style="color:#c03030">"path"</span>,{type:<span style="color:#c03030">"path"</span>,line:[[<span style="color:#0080a0">10</span>,<span style="color:#0080a0">20</span>],[<span style="color:#0080a0">300</span>,<span style="color:#0080a0">30</span>],[<span style="color:#0080a0">20</span>,<span style="color:#0080a0">100</span>],[<span style="color:#0080a0">50</span>,<span style="color:#0080a0">30</span>]],cursor:<span style="color:#c03030">"pointer"</span>});
@@ -173,7 +193,113 @@ sample10.element(<span style="color:#c03030">"path"</span>).hover(<span style="c
     sample10.element(key).cvss({background:<span style="color:#c03030">"none"</span>});
 });
 </pre>
-		
+<p>
+	<h2>bind <small>:다수의 이벤트 정의</small></h2>
+	<p>
+		<b>canvas.element(객체이름)<span class="text-primary">.bind("mouseup mousedown",function(){...});</span> (hover은 mousein,mouseout으로 분리해서 써야함)</b>
+	</p>
+	<h2>unbind <small>:(다수의) 이벤트 삭제</small></h2>
+	<p>
+		<b>canvas.element(객체이름)<span class="text-primary">.unbind("mouseup mousedown");</span></b>
+	</p>	
+</p>
+<hr/>
+<h2><b class="text-info">베이스 엘레먼트</b></h2>
+		<p>
+			<b class="text-primary"><u>기존에 존재하는 엘레먼트의 속성(스타일,이벤트 함수)을 불러올수 있다.</u></b>
+		</p>
+		<canvas id="sample11"></canvas>
+		<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample11<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample11"</span>);
+sample11.createElement({
+    baseObj:{
+        wdith:<span style="color:#0080a0">100</span>,height:<span style="color:#0080a0">100</span>,border:<span style="color:#c03030">"1px solid #aaa"</span>,background:<span style="color:#c03030">"red"</span>
+    },
+    obj:{
+        baseElement:<span style="color:#c03030">"baseObj"</span>,width:<span style="color:#0080a0">50</span>,x:<span style="color:#0080a0">10</span>,y:<span style="color:#0080a0">10</span>,background:<span style="color:#c03030">"blue"</span>
+    }
+});
+</pre>
+<h3 class="text-danger">이때 <b>baseElement</b>는 baseStyleElement 와 baseEventElement 로 나뉠 수 있다.</h3>
+<ul>
+<li><b>baseStyleElement</b> 기존의 엘레먼트의 스타일만을 불러온다.</li>
+<li><b>baseEventElement</b> 기존의 엘레먼트에 적용된 이벤트를 현재객체에 불러온다.</li>
+</ul>
+<hr/>
+<h2>zindex <small> : css의 그 zindex와 기능이 같습니다.</small></h2>
+<h2>cursor <small> : css의 그 cursor 기능이 같습니다.</small></h2>
+<h2>opacity <small> : 0~1의 값으로, 투명도를 설정가능함</small></h2>
+
+<p>cursor은 객체의에 마우스가 올라왔을 시에 마우스 커서의 모양을 지정할 수 있습니다.<br/>그 종류는 css와 같습니다.</p>
+<h2>translateX,translateY <small> : x,y와는 별개로 엘레먼트를 기존좌표를 기준으로 입력값만큼 각각 x,y좌표를 옮깁니다.</small></h2>
+<canvas width=500 height=300 id="sample12"></canvas>
+<br/><small>도형을 클릭해보세요.</small>
+<pre style="background:#f1f1f1;color:#000"><span style="color:#a08000">var</span> sample12<span style="color:#2060a0">=</span><span style="color:#2060a0">new</span> Canvas(<span style="color:#c03030">"#sample12"</span>);
+<span style="color:#a08000">var</span> zindex<span style="color:#2060a0">=</span><span style="color:#0080a0">0</span>;
+sample12.createElement({
+    baseObj:{type:<span style="color:#c03030">"path"</span>,line:[[<span style="color:#0080a0">0</span>,<span style="color:#0080a0">10</span>],[<span style="color:#0080a0">100</span>,<span style="color:#0080a0">300</span>],[<span style="color:#0080a0">200</span>,<span style="color:#0080a0">300</span>]],cursor:<span style="color:#c03030">"pointer"</span>},
+    polygon:{
+        baseElement:<span style="color:#c03030">"baseObj"</span>,background:<span style="color:#c03030">"black"</span>,translateX:<span style="color:#0080a0">0</span>
+    },
+    polygon2:{
+        baseElement:<span style="color:#c03030">"baseObj"</span>,background:<span style="color:#c03030">"red"</span>,translateX:<span style="color:#0080a0">50</span>,translateY:<span style="color:#0080a0">10</span>
+    },
+});
+sample12.element(<span style="color:#c03030">"baseObj"</span>).bind(<span style="color:#c03030">"click"</span>,<span style="color:#a08000">function</span>(e,key){
+    zindex<span style="color:#2060a0">++</span>;
+    sample12.element(key).cvss(<span style="color:#c03030">"zindex"</span>,zindex);
+});
+</pre>
+<h2>show,onlyBaseElement (아직 block타입에서 밖에서 사용하지 못함.)</h2><p>
+	show:(true,false) 속성을 이용하여 객체를 숨기거나 보여줄 수 있습니다. <br/>
+	onlyBaseElement 속성은 화면에 엘레먼트를 출력하지않고 오직 베이스엘레먼트로 서의 역할로만 존재하는 객체를 만듭니다.
+</p>
+<hr/>
+<h2>속성들의 기본값</h2>
+<pre style="background:#f1f1f1;color:#000">Canvas.prototype.<span style="color:maroon">$initElement</span>={
+    translate:{
+        x:<span style="color:#0080a0">0</span>,
+        y:<span style="color:#0080a0">0</span>
+    },
+    scale:{
+        x:<span style="color:#0080a0">0</span>,
+        y:<span style="color:#0080a0">0</span>
+    },
+    zindex:<span style="color:#0080a0">0</span>,
+    type:<span style="color:#c03030">"block"</span>,
+    width:<span style="color:#0080a0">50</span>,
+    height:<span style="color:#0080a0">50</span>,
+    x:<span style="color:#0080a0">0</span>,
+    y:<span style="color:#0080a0">0</span>,    
+    background:<span style="color:#c03030">"rgba(0,0,0,0)"</span>,
+    opacity:<span style="color:#0080a0">1</span>,
+    origin:[<span style="color:#c03030">"0"</span>,<span style="color:#c03030">"0"</span>],
+    circle:{
+        x:<span style="color:#0080a0">0</span>,
+        y:<span style="color:#0080a0">0</span>,
+        r:<span style="color:#0080a0">10</span>,
+        start:<span style="color:#0080a0">0</span>,
+        end:<span style="color:#0080a0">2</span><span style="color:#2060a0">*</span>Math.PI,
+        clock:true
+    },
+    backgroundImage:{
+        src:undefined,
+        pattern:<span style="color:#c03030">"no-repeat"</span>,
+    },
+    border:[<span style="color:#0080a0">1</span>],
+    cursor:<span style="color:#c03030">"default"</span>,
+    fontSize:<span style="color:#c03030">"12px"</span>,
+    fontFamily:<span style="color:#c03030">"Arial"</span>,
+    borderColor:<span style="color:#c03030">"black"</span>,
+    borderWidth:<span style="color:#0080a0">0</span>,
+    content:<span style="color:#c03030">""</span>,
+    figure:true,
+    rotate:<span style="color:#0080a0">0</span>,
+    rotateOrigin:{
+        x:<span style="color:#0080a0">0</span>,
+        y:<span style="color:#0080a0">0</span>
+    }
+};
+</pre>
 		</section>
 		<script>
 			var sample1=new Canvas("#sample1");
@@ -247,6 +373,32 @@ sample10.element(<span style="color:#c03030">"path"</span>).hover(<span style="c
 				sample10.element(key).cvss({background:"red"});
 			},function(e,key){
 				sample10.element(key).cvss({background:"none"});
+			});
+
+			var sample11=new Canvas("#sample11");
+			sample11.createElement({
+				baseObj:{
+					wdith:100,height:100,border:"1px solid #aaa",background:"red"
+				},
+				obj:{
+					baseElement:"baseObj",width:50,x:10,y:10,background:"blue"
+				}
+			});
+
+			var sample12=new Canvas("#sample12");
+			var zindex=0;
+			sample12.createElement({
+				baseObj:{type:"path",line:[[0,10],[100,300],[200,300]],cursor:"pointer"},
+				polygon:{
+					baseElement:"baseObj",background:"black",translateX:0
+				},
+				polygon2:{
+					baseElement:"baseObj",background:"red",translateX:50,translateY:10,opacity:0.5
+				},
+			});
+			sample12.element("baseObj").bind("click",function(e,key){
+				zindex++;
+				sample12.element(key).cvss("zindex",zindex);
 			});
 		</script>
 		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
