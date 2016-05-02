@@ -61,6 +61,7 @@
 				this.$imageSrc=new Array();
 				this.$imageDataMatch=new Object();
 
+				this.$cvss_target=new Array();
 				return 1;			
 			}else{
 				console.error("CvSS ERROR : not found canvas '"+name+"'");
@@ -818,78 +819,90 @@
 			if(element == this){ //canvas window Event
 				return this.$windowEvent;
 			}
-			this.$cvss_target=typeof element=="string" || typeof element=="number" ? String(element) : undefined;
+			if(typeof element=="string" || typeof element=="number"){
+				this.$cvss_target.push(String(element))
+			}
 			return this;
 		}
 		//element(element).cvss
 		Canvas.prototype.cvss=function(info,/*optional*/val){
-			var target=this.$cvss_target;
+			var target=this.$cvss_target[this.$cvss_target.length-1];
 
-			if(!this.$element[this.$cvss_target]){
+			if(!this.$element[target]){
 				console.error("CvSS ERROR : not found element");
 				return 0;
 			}
+			this.$cvss_target.pop();
 			var obj=new Object();
 			if((val || val=="") && typeof info=="string"){
-				obj[this.$cvss_target]=Canvas.prototype.CopyObj(this.$element[this.$cvss_target]);
-				obj[this.$cvss_target][info]=val;
+				obj[target]=Canvas.prototype.CopyObj(this.$element[target]);
+				obj[target][info]=val;
 				this.createElement(obj);						
 			}else{
 				if(Object.prototype.toString.call( info ) === '[object Array]'){
 					var i,arr=new Object();
 					for(i=0; i<info.length; i++){
-						arr[info[i]]=this.$element[this.$cvss_target][info[i]];
+						arr[info[i]]=this.$element[target][info[i]];
 					}
 					return arr;
 				}else if(typeof info=="object"){						
-					obj[this.$cvss_target]=Canvas.prototype.setBaseObj(this.$element[this.$cvss_target],info,true);		
+					obj[target]=Canvas.prototype.setBaseObj(this.$element[target],info,true);		
 					this.createElement(obj);
 				}else{
-					if(this.$element[this.$cvss_target] && this.$element[this.$cvss_target][info]){
-						if(typeof this.$element[this.$cvss_target][info]=="object"){
-							return Canvas.prototype.CopyObj(this.$element[this.$cvss_target][info]);
+					if(this.$element[target] && this.$element[target][info]){
+						if(typeof this.$element[target][info]=="object"){
+							return Canvas.prototype.CopyObj(this.$element[target][info]);
 						}
-						return this.$element[this.$cvss_target][info];
+						return this.$element[target][info];
 					}
 				}
 			}
 		}
 		Canvas.prototype.getInfo=function(){
-			if(!this.$element[this.$cvss_target]){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+
+			if(!this.$element[target]){
 				console.error("CvSS ERROR : not found element");
 				return 0;
 			}
-			return Canvas.prototype.CopyObj(this.$element[this.$cvss_target]);
+			this.$cvss_target.pop();
+
+			return Canvas.prototype.CopyObj(this.$element[target]);
 		}
 		//element(element).create({info})
 		Canvas.prototype.create=function(info){
 			var result=[];
 			result[this.$cvss_target]=info;
+			this.$cvss_target.pop();
 			this.createElement(result);
+			return 1;
 		}
 		//element(element).remove();
 		Canvas.prototype.remove=function(){
-			if(!this.$element[this.$cvss_target]){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+			if(!this.$element[target]){
 				console.error("CvSS ERROR : not found element");	
 				return 0;
 			}
-			delete this.$element[this.$cvss_target];
-			delete this.$eventFunc[this.$cvss_target];
-			this.$cvss_target=undefined;
 
+			delete this.$element[target];
+			delete this.$eventFunc[target];
+			this.$cvss_target.pop();
 			this.createElement(this.$element);
 		}
 
 
 		/*CvssElement Events*/
 		Canvas.prototype.submitEvent=function(type,func){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+			this.$cvss_target.pop();
 			if(typeof type!="string"){return 0;}
 			if(Canvas.prototype.$Element_Event.indexOf(type)==-1){return 0;}
 			if(typeof func!="function"){return 0;}
-			if(typeof this.$eventFunc[this.$cvss_target] !="object"){
-				this.$eventFunc[this.$cvss_target]=new Object();
+			if(typeof this.$eventFunc[target] !="object"){
+				this.$eventFunc[target]=new Object();
 			}
-			this.$eventFunc[this.$cvss_target][type]=func;
+			this.$eventFunc[target][type]=func;
 		}
 		Canvas.prototype.mousedown=function(func){this.submitEvent("mousedown",func);}
 		Canvas.prototype.mouseup=function(func){this.submitEvent("mouseup",func);}
@@ -902,49 +915,63 @@
 
 		//hover is mousein and mouseout event
 		Canvas.prototype.hover=function(Infunc,/*optional*/Outfunc){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
 			if(typeof Infunc=="function"){this.submitEvent("mousein",Infunc);}
+			this.$cvss_target.push(target);
 			if(typeof Outfunc=="function"){this.submitEvent("mouseout",Outfunc);}
 		}
 		Canvas.prototype.click=function(func){
-			if(typeof this.$eventFunc[this.$cvss_target] !="object"){
-				this.$eventFunc[this.$cvss_target]=new Object();
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+			this.$cvss_target.pop();
+			if(typeof this.$eventFunc[target] !="object"){
+				this.$eventFunc[target]=new Object();
 			}
-			this.$eventFunc[this.$cvss_target]["click"]=func;
+			this.$eventFunc[target]["click"]=func;
 		}
 		Canvas.prototype.hide=function(func){
-			if(this.$element[this.$cvss_target]){
-				this.$element[this.$cvss_target].show=false;
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+			this.$cvss_target.pop();
+			if(this.$element[target]){
+				this.$element[target].show=false;
 				this.createElement(this.$element);
 			}
 			return 0;
 		}
 		Canvas.prototype.show=function(func){
-			if(this.$element[this.$cvss_target]){
-				this.$element[this.$cvss_target].show=true;
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+			this.$cvss_target.pop();
+			if(this.$element[target]){
+				this.$element[target].show=true;
 				this.createElement(this.$element);
 			}
 			return 0;
 		}
 		Canvas.prototype.bind=function(events,func){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
 			if(typeof events!="string"){console.warn("Cvss Warning : bind's events is string"); return 0;}
 			events=events.split(" ");
 			var i;
 			for(i=0; i<events.length; i++){
 				if(Canvas.prototype.$Element_Event.indexOf(events[i])==-1){continue;}
 				this.submitEvent(events[i],func);
+				this.$cvss_target.push(target);
 			}
+			this.$cvss_target.pop();
 		}
 		Canvas.prototype.unbind=function(events){
+			var target=this.$cvss_target[this.$cvss_target.length-1];
+		
 			if(typeof events!="string"){console.warn("Cvss Warning : bind's events is string"); return 0;}
 			events=events.split(" ");
 			var i;
 			for(i=0; i<events.length; i++){
 				if(Canvas.prototype.$Element_Event.indexOf(events[i])==-1){continue;}
-				if(this.$eventFunc[this.$cvss_target]){
-					delete this.$eventFunc[this.$cvss_target][events[i]];
+				if(this.$eventFunc[target]){
+					delete this.$eventFunc[target][events[i]];
 					return 1;
 				}
 			}
+			this.$cvss_target.pop();
 			return 0;
 		}
 		Canvas.prototype.$initElement={
@@ -958,7 +985,7 @@
 			},
 			zindex:0,
 			type:"block",
-			width:100,
+			width:50,
 			height:50,
 			x:0,
 			y:0,	
