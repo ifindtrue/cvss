@@ -3,28 +3,56 @@
 	<head>
 		<title>폴리곤</title>
 		<meta charset="utf8">
-		<script src="./js/cvss.0.1.min.js"></script>
+		<script src="./js/cvss.0.1.js"></script>
+		<script src="./engine.js"></script>
 	</head>
 	<body>
 		<canvas width=500 height=500 id="canvas"></canvas>
+		<button onClick="addF('L')">L</button>
+		<button onClick="addF('R')">R</button>
+
 		<script>
 			var canvas=new Canvas("#canvas");
-			t=0;
 
-			canvas.element("polygon").create({type:"block",x:300,y:300,origin:"0% 0%",scale:"50 50",translateY:"",rotate:10,rotateOriginX:0,rotateOriginY:"0%",
+			canvas.element("polygon").create({type:"block",x:0,y:300,scale:"50 50",translateY:"",rotateOriginX:0,rotateOriginY:"0%",
 				type:"block",line:[[0,0],[100,100],[200,30],[100,300],[100,200]],width:50,
-				border:"5px solid #ddd",cursor:"pointer",zindex:11
+				background:"blue",cursor:"pointer",zindex:1
+			});
+			canvas.element("polygon1").create({
+				type:"block",width:"100%",background:"#aaa",y:"100%",origin:"0 100%"
+			});
+			canvas.element("polygon2").create({type:"block",x:0,y:00,scale:"50 50",translateY:"",rotateOriginX:0,rotateOriginY:"0%",
+				type:"block",line:[[0,0],[100,100],[200,30],[100,300],[100,200]],width:50,
+				background:"",cursor:"pointer",zindex:10,border:"1px solid blue"
+			});
+			var engine=new Engine(canvas,{fps:100,gravity:[0,5]});
+
+			engine.particle("polygon2",{ //blackHigh
+				m:3,v:[0,300]
+			});
+	
+	
+			engine.particle("polygon1",{
+				m:Infinity,v:[0,0]
+			});
+				engine.particle("polygon",{ //blueLOW
+				m:100,v:[0,0]
 			});
 
-			canvas.element("polygon").hover(function(e){
-				this.element("polygon").cvss({background:"red"});
-			},function(e){
-				this.element("polygon").cvss({background:"none"});
-			});
-			//	canvas.createElement({b:{type:"path",translateX:100,x:200,y:100,r1:10,background:"black",line:[[10,10],[100,100],[30,300],[20,20]],zindex:10,opacity:0.1}});
-			setInterval(function(){
-				canvas.element("polygon").cvss("rotate","+=10");
-			},100);
+	
+	
+			function addF(type){
+				var r=0;
+				switch(type){
+					case 'R':r=3;
+						break;
+					case 'L':r=-3;
+						break;
+				}
+				engine.particle("polygon").property({m:100,a:[r,0]});
+			}
+			//발판 질량보다 더 높은속도
+
 		</script>
 	</body>
 </html>
