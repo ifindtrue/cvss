@@ -38,12 +38,13 @@
 				});
 
 				var th=this;
-				function tempCanvasMouseOver(event){Canvas.prototype.canvasMouseOver.apply(th,[event]);}
-				function tempCanvasMouseDown(event){Canvas.prototype.canvasMouseEvent.apply(th,[event,"mousedown"]);}
-				function tempCanvasMouseUp(event){Canvas.prototype.canvasMouseEvent.apply(th,[event,"mouseup"]);}
+				function tempCanvasMouseOver(event){th.canvasMouseOver(event);}
+				function tempCanvasMouseDown(event){th.canvasMouseEvent(event,"mousedown");}
+				function tempCanvasMouseUp(event){th.canvasMouseEvent(event,"mouseup");}
 				this.$canvas.onselectstart=function(){return false};
 	
 				this.$preOver=undefined;
+
 				this.$preEvent=undefined;
 				this.$preEventType=undefined;
 				
@@ -246,8 +247,8 @@
 				}
 				val=Number(val);
 			}
-			if(val){return val;}
-			return initVal;
+			if(isNaN(val)){return initVal;}
+			return val;
 		}
 		Canvas.prototype.persentFormat=function(size,persent,init_val){
 			var front_str="";
@@ -280,7 +281,7 @@
 			for(var i=0; i<key.length; i++){
 				var newKey=key[i];
 				//불른 형식으로 타입이결정되는 객체는 제외 show가안되는이유는 onlybaseelement에서막혔기 때문이다.
-				if(sub && newKey!="onlyBaseElement" && newKey!="show" && (newObj[newKey]=="none" || (typeof newObj[newKey]!="number" && !newObj[newKey]))){
+				if(sub && newKey!="onlyBaseElement" && newKey!="show" && (newObj[newKey]=="none" || isNaN(newObj[newKey]))){
 					if(!baseElementCheck){
 						delete r[newKey];
 						if(sub){
@@ -349,7 +350,6 @@
 				if(typeof element.baseStyleElement=="string" && typeof info[element.baseStyleElement]=="object"){
 					element=Canvas.prototype.setBaseObj(info[element.baseStyleElement],element,true,true);
 				}
-
 				if(this.$Element_Type.indexOf(element.type) == -1){
 					element.type=initElement.type;
 				}
@@ -360,6 +360,21 @@
 					this.$event[info_key[i]]=new Object();
 				}
 				event=this.$event[info_key[i]];
+				if((!$element && typeof element.border=="string")|| typeof element.border=="string" && ($element && $element.border!=element.border)){
+					borderArr=element.border.split(" ");
+					border.width=numberFormat(borderArr[0],0,initElement.borderWidth);
+						this.$context.lineWidth=border.width;
+					border.color=borderArr[2] || initElement.borderColor;
+						this.$context.strokeStyle=border.color;
+				}
+				if(!border.width){
+					border.width=numberFormat(element.borderWidth,($element && $element.borderWidth)||0,initElement.borderWidth);
+					this.$context.lineWidth=border.width;
+				}
+				if(!border.color){
+					border.color=element.borderColor || initElement.borderColor;
+					this.$context.strokeStyle=border.color;
+				}
 				switch(element.type){
 					case "block":
 						if(element.$temp || !$element){
@@ -395,21 +410,7 @@
 							y-=persentFormat(element.height,origin[1],initElement.origin[1]);
 
 							this.$context.fillStyle=element.background ? element.background: initElement.background;
-							if((!$element && typeof element.border=="string")|| typeof element.border=="string" && ($element && $element.border!=element.border)){
-								borderArr=element.border.split(" ");
-								border.width=numberFormat(borderArr[0],0,initElement.borderWidth);
-									this.$context.lineWidth=border.width;
-								border.color=borderArr[2] || initElement.borderColor;
-									this.$context.strokeStyle=border.color;
-							}
-							if(!border.width){
-								border.width=numberFormat(element.borderWidth,($element && $element.borderWidth)||0,initElement.borderWidth);
-								this.$context.lineWidth=border.width;
-							}
-							if(!border.color){
-								border.color=element.borderColor || initElement.borderColor;
-								this.$context.strokeStyle=border.color;
-							}
+
 							element.borderWidth=border.width;
 							element.borderColor=border.color;
 							element.border=border.width+" solid "+border.color;
@@ -460,8 +461,8 @@
 								element.rotate=numberFormat(element.rotate,$element && $element.rotate,initElement.rotate,false);
 								element.rotateOriginX=numberFormat(persentFormat(element.width,element.rotateOriginX,initElement.rotateOrigin.x),($element && $element.rotateOriginX),initElement.rotateOrigin.x);
 								element.rotateOriginY=numberFormat(persentFormat(element.height,element.rotateOriginY,initElement.rotateOrigin.y),($element && $element.rotateOriginY),initElement.rotateOrigin.y);
-								var cos=Math.cos(element.rotate*Math.PI/180);
-								var sin=Math.sin(element.rotate*Math.PI/180);
+								var cos=Math.cos(element.rotate);
+								var sin=Math.sin(element.rotate);
 								//x+rotateOriginX
 								event.line=[[-element.rotateOriginX*cos+element.rotateOriginY*sin+x+element.rotateOriginX+translate.x,-element.rotateOriginX*sin-element.rotateOriginY*cos+y+element.rotateOriginY+translate.y],[(width-element.rotateOriginX)*cos+element.rotateOriginY*sin+x+element.rotateOriginX+translate.x,(width-element.rotateOriginX)*sin-element.rotateOriginY*cos+y+translate.y+element.rotateOriginY],[(width-element.rotateOriginX)*cos-(height-element.rotateOriginY)*sin+x+element.rotateOriginX+translate.x,(width-element.rotateOriginX)*sin+(height-element.rotateOriginY)*cos+y+element.rotateOriginY+translate.y],[-element.rotateOriginX*cos-(height-element.rotateOriginY)*sin+x+element.rotateOriginX+translate.x,-element.rotateOriginX*sin+(height-element.rotateOriginY)*cos+y+element.rotateOriginY+translate.y]];	
 								t=event.line;
@@ -530,7 +531,7 @@
 							TempX=x,TempY=y;
 							this.$context.translate(x+element.rotateOriginX,y+element.rotateOriginY);
 							x=-(element.rotateOriginX),y=-(element.rotateOriginY);
-							this.$context.rotate(element.rotate*Math.PI/180);
+							this.$context.rotate(element.rotate);
 						}
 						if(element.borderWidth>0){
 							this.$context.strokeRect(x-element.borderWidth/2,y-element.borderWidth/2,width+element.borderWidth,height+element.borderWidth);
@@ -594,26 +595,9 @@
 						break;
 					case "path":
 						if(element.$temp || !$element){
-							if((!$element && typeof element.border=="string")|| typeof element.border=="string" && ($element && $element.border!=element.border)){
-								borderArr=element.border.split(" ");
-								border.width=numberFormat(borderArr[0],0,initElement.borderWidth);
-									this.$context.lineWidth=border.width;
-								border.color=borderArr[2] || initElement.borderColor;
-									this.$context.strokeStyle=border.color;
-							}
-							if(!border.width){
-								border.width=numberFormat(element.borderWidth,($element && $element.borderWidth),initElement.borderWidth);
-								this.$context.lineWidth=border.width;
-							}
-							if(!border.color){
-								border.color=element.borderColor || initElement.borderColor;
-								this.$context.strokeStyle=border.color;
-							}
-
 							element.borderWidth=border.width;
 							element.borderColor=border.color;
 							element.border=border.width+" solid "+border.color;
-
 							if(element.lineJoin){
 								if(Join.indexOf(element.lineJoin)){
 									this.$context.lineJoin=element.lineJoin;
@@ -693,43 +677,9 @@
 						if(element.$temp || !$element){
 							x=numberFormat(element.x,($element && $element.x) || 0,initElement.circle.x);
 							y=numberFormat(element.y,($element && $element.y) || 0,initElement.circle.y);
-							isR1=(!$element && element.r1) || ($element && ($element.r1!=element.r1));
-							isR2=(!$element && element.r2) || ($element && ($element.r2!=element.r2));
 
-							if((!$element && typeof element.r=="string") || ($element && $element.r!=element.r)){
-								var r=typeof element.r=="string" ? element.r.split(" ") : 0;
-								element.r1=isR1 ? element.r1 : numberFormat(r[0],($element && $element.r1) || 0,initElement.circle.r);
-								element.r2=isR2 ? element.r2 : numberFormat(r[1],($element && $element.r2) || 0,element.r1);
-							}
-							if(isR1){
-								element.r1=numberFormat(element.r1,($element && $element.r1) || 0,0);
-							}
-							if(isR2){
-								element.r2=numberFormat(element.r2,($element && $element.r2) || 0,0);								
-							}
-							if(!element.r1){
-								element.r1=initElement.circle.r;
-							}
-							if(!element.r2){
-								element.r2=initElement.circle.r;
-							}
-							element.r=element.r1+" "+element.r2;
+							element.r=numberFormat(element.r,($element && $element.r),10);
 						
-							if((!$element && typeof element.border=="string")|| typeof element.border=="string" && ($element && $element.border!=element.border)){
-								borderArr=element.border.split(" ");
-								border.width=numberFormat(borderArr[0],0,initElement.borderWidth);
-									this.$context.lineWidth=border.width;
-								border.color=borderArr[2] || initElement.borderColor;
-									this.$context.strokeStyle=border.color;
-							}
-							if(!border.width){
-								border.width=numberFormat(element.borderWidth,($element && $element.borderWidth)||0,initElement.borderWidth);
-								this.$context.lineWidth=border.width;
-							}
-							if(!border.color){
-								border.color=element.borderColor || initElement.borderColor;
-								this.$context.strokeStyle=border.color;
-							}
 
 							element.borderWidth=border.width;
 							element.borderColor=border.color;
@@ -746,64 +696,44 @@
 							}
 
 							origin=typeof element.origin=="string" ? element.origin.split(" ") : initElement.origin;
-							x-=persentFormat(element.r1*2,origin[0],initElement.origin[0]);
-							y-=persentFormat(element.r2*2,origin[1],initElement.origin[1]);
+							x-=persentFormat(element.r*2,origin[0],initElement.origin[0]);
+							y-=persentFormat(element.r*2,origin[1],initElement.origin[1]);
 
 							this.$context.beginPath();
-							if(element.r2 && element.r1!=element.r2){
-								this.$context.ellipse(x,y,element.r1,element.r2,0,element.start,element.end,false);
-							}else{
-								this.$context.arc(x,y,element.r1,element.start,element.end,element.clock);
-							}
+							this.$context.arc(x,y,element.r,element.start,element.end,element.clock);
 							if(element.background){this.$context.fillStyle=element.background; this.$context.fill();}
 							if(element.borderWidth>0){this.$context.stroke();}
 
 							if(typeof event.c!="object"){
 								event.c=new Object();
 							}
-							if(element.r1>element.r2){
-								event.c.x=Math.sqrt((element.r1-element.r2)*(element.r1+element.r2))+x;
-								event.c.y=y;
-								event.c.mirrorx=-event.c.x+2*x;
-								event.c.mirrory=y;
-								event.a=element.r1;
-								event.mirror=true;
-							}else if(element.r1==element.r2){
-								event.c.x=x;
-								event.c.y=y;
-								event.c.mirrorx=x;
-								event.c.mirrory=y;
-								event.a=element.r1;
-								event.mirror=true;
-							}else{
-								event.c.y=Math.sqrt((element.r2-element.r1)*(element.r1+element.r2))+y;
-								event.c.x=x;
-								event.c.mirrorx=x;
-								event.c.mirrory=-event.c.y+2*y;
+							event.c.x=x;
+							event.c.y=y;
+							event.c.mirrorx=x;
+							event.c.mirrory=y;
+							event.a=element.r;
+							event.mirror=true;
 
-								event.a=element.r2;
-								event.mirror=false;
-							}
 							element.$x=x;
 							element.$y=y;
 							delete element.$temp;
 						}else{
 							this.$context.beginPath();
-							if(element.r2 && element.r1!=element.r2){
-								this.$context.ellipse(element.$x,element.$y,element.r1,element.r2,0,element.start,element.end,false);
-							}else{
-								this.$context.arc(element.$x,element.$y,element.r1,element.start,element.end,element.clock);
-							}
+							this.$context.arc(element.$x,element.$y,element.r,element.start,element.end,element.clock);
 							if(element.background){this.$context.fillStyle=element.background; this.$context.fill();}
 							if(element.borderWidth>0){this.$context.stroke();}
 						}
 						break;
 					case "text":
 						var str=typeof element.content=="string" || typeof element.content=="number" ? element.content : initElement.content;
+						element.fontSize=numberFormat(element.fontSize,($element && $element.fontSize),initElement.fontSize);
 						var fontTemp=(element.fontSize || initElement.fontSize)+"px "+(element.fontFamily || initElement.fontFamily);
 						this.$context.font=fontTemp;
-						element.x=numberFormat(element.x,($element && $element.x),initElement.x);
-						element.y=numberFormat(element.y,($element && $element.y),initElement.y);
+						this.$context.fillStyle=element.color;
+						this.$context.textAlign=element.textAlign;
+						this.$context.textBaseline=element.textBaseline;
+							element.x=numberFormat(persentFormat(this.$canvas.width,element.x,initElement.x),($element && $element.x),initElement.x);
+							element.y=numberFormat(persentFormat(this.$canvas.height,element.y,initElement.y),($element && $element.y),initElement.y);
 						this.$context.fillText(str,element.x,element.y);
 						break;
 				}
@@ -827,7 +757,6 @@
 		//element(element).cvss
 		Canvas.prototype.cvss=function(info,/*optional*/val){
 			var target=this.$cvss_target[this.$cvss_target.length-1];
-
 			if(!this.$element[target]){
 				console.error("CvSS ERROR : not found element");
 				return 0;
@@ -1006,7 +935,7 @@
 			},
 			border:[1],
 			cursor:"default",
-			fontSize:"12px",
+			fontSize:12,
 			fontFamily:"Arial",
 			borderColor:"black",
 			borderWidth:0,
@@ -1022,7 +951,7 @@
 		Canvas.prototype.$Element_Event=["mouseup","mousedown","click","mousein","mouseout","dblclick","dragstart","drag","drop"];
 		Canvas.prototype.$lineJoin=["miter","round","bevel"];
 		Canvas.prototype.$backgroundRepeatType=["no-repeat","repeat","repeat-y","repeat-x"];
-		 Canvas.prototype.CopyObj=function(val){
+		Canvas.prototype.CopyObj=function(val){
 			if(!val){
 				return new Object();
 			}
