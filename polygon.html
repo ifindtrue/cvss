@@ -28,7 +28,7 @@
 			var engine=new Engine(canvas,{fps:100,gravity:[0,5]});
 
 			engine.particle("polygon2",{ //blackHigh
-				m:3,v:[0,300]
+				m:3,v:[10,0]
 			});
 	
 	
@@ -49,7 +49,7 @@
 					case 'L':r=-3;
 						break;
 				}
-				engine.particle("polygon").property({m:100,a:[r,0]});
+				engine.particle("polygon").property({a:[r,0]});
 			}
 			//발판 질량보다 더 높은속도
 
