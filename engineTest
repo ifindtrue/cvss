@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>엔진 테스트</title>
+		<meta charset="utf8">
+		<script src="./js/cvss.0.1.js"></script>
+		<script src="./js/engine.js"></script>
+	</head>
+	<body>
+		<canvas width=500 height=500 id="canvas"></canvas>
+		<script>
+			var canvas=new Canvas("#canvas");
+
+			canvas.element("particle").create({type:"block",x:0,y:300,background:"blue"});
+			canvas.element("background").create({type:"block",width:"100%",background:"#aaa",y:"100%",origin:"0 100%"});
+			canvas.element("particle2").create({type:"block",x:0,y:0,border:"1px solid blue"});
+
+			var engine=new Engine(canvas,{fps:100,gravity:[0,5]});
+
+			engine.particle("particle",{ //blackHigh
+				m:3,v:[0,0]
+			});
+			engine.particle("background",{
+				m:Infinity,v:[0,0]
+			});
+				engine.particle("particle2",{ //blueLOW
+				m:100,v:[5,0]
+			});
+		</script>
+	</body>
+</html>
