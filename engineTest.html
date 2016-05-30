@@ -8,6 +8,7 @@
 	</head>
 	<body>
 		<canvas width=500 height=500 id="canvas"></canvas>
+		<canvas width=500 height=500 id="canvas2"></canvas>
 		<script>
 			var canvas=new Canvas("#canvas");
 
@@ -23,9 +24,28 @@
 			engine.particle("background",{
 				m:Infinity,v:[0,0]
 			});
-				engine.particle("particle2",{ //blueLOW
+			engine.particle("particle2",{ //blueLOW
 				m:100,v:[5,0]
 			});
+
+	
+			var canvas2=new Canvas("#canvas2");
+
+			canvas2.element("particle").create({type:"block",x:0,y:300,background:"blue"});
+			canvas2.element("background").create({type:"block",width:"100%",background:"#aaa",y:"100%",origin:"0 100%"});
+			canvas2.element("particle2").create({type:"block",x:0,y:0,border:"1px solid blue"});
+
+			var engine2=new Engine(canvas2,{fps:100,gravity:[0,5]});
+
+			engine2.particle("particle",{ //blackHigh
+				m:3,v:[0,0]
+			});
+			engine2.particle("background",{
+				m:Infinity,v:[0,0]
+			});
+			engine2.particle("particle2",{ //blueLOW
+				m:1,v:[0,0]
+			});		
 		</script>
 	</body>
 </html>
