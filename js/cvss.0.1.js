@@ -281,7 +281,7 @@
 			for(var i=0; i<key.length; i++){
 				var newKey=key[i];
 				//불른 형식으로 타입이결정되는 객체는 제외 show가안되는이유는 onlybaseelement에서막혔기 때문이다.
-				if(sub && newKey!="onlyBaseElement" && newKey!="show" && (newObj[newKey]=="none" || isNaN(newObj[newKey]))){
+				if(sub && newKey!="onlyBaseElement" && newKey!="show" && (newObj[newKey]=="none" || (typeof newObj[newKey]!="number" && !newObj[newKey]))){
 					if(!baseElementCheck){
 						delete r[newKey];
 						if(sub){
