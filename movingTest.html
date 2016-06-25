@@ -16,7 +16,7 @@
 			
 			canvas.element("background").create({type:"block",width:"100%",background:"#aaa",y:"100%",origin:"0 100%",zindex:0,rotate:0});
 			canvas.element("particle2").create({type:"polygon",x:90,y:00,border:"1px solid red",vertex:[[100,20],[300,300],[200,300]],zindex:10});
-			canvas.element("particle").create({type:"block",x:0,y:-100,background:"red",rotate:0,height:1000,zindex:100});
+			canvas.element("particle").create({type:"block",x:0,y:-100,background:"red",rotate:0,height:100,zindex:100});
 			canvas.element("particle3").create({type:"polygon",x:100,y:00,border:"1px solid red",vertex:[[100,20],[300,300],[200,300]],zindex:10});
 
 			var engine=new Engine(canvas,{fps:64,gravity:[0,10]});
