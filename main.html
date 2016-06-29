@@ -1,0 +1,681 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Pysics Develop Tool</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+		<meta charset="utf8">
+		<link href="./css/stylesheet.css" rel="stylesheet">
+		<link href="./css/bootstrap.css" rel="stylesheet">
+		<script src="./js/cvss.0.2.js"></script>
+		<script src="./js/engine.js"></script>
+	</head>
+	<body>
+		<section class="container">
+			<nav id="projectNav">
+				<div class="btn btn-info btn-block btn-lg" id="run" data-toggle="run">RUN</div>
+				<section class="importantBtnWrap">
+					<div class="btn btn-primary btn-block btn-lg">프로젝트</div>
+						<div class="btn btn-default btn-block btn-sm" style="border-bottom-width:0">그래픽</div>
+						<div class="btn btn-default btn-block btn-sm">소스	</div>
+					<hr/>
+					<div class="btn btn-primary btn-block btn-md">기능</div>
+						<div class="btn btn-default btn-block btn-sm" style="border-bottom-width:0">js 파일로 반환</div>
+						<div class="btn btn-default btn-block btn-sm">공유하기</div>
+					<hr/>
+					<div class="btn-help">?</div>
+
+				</section>
+
+			</nav>
+			<section id="mainSection">
+				<section id="runArea">
+					<canvas id="liveView">현재 브라우저는 html5를 지원하지 않습니다.</canvas>
+				</section>
+				<article id="stateArea">
+					<section id="particleInfo">
+						<article id="physicsInfo">
+							<div class="float background"></div>
+							<div class="float text">
+								<b>Physics Property</b><br/>
+								m:1212</br/>
+								f:1212</br/>
+								a:1212</br/>
+								<!--엔진을 실행하면 실행-->	
+							</div>
+						</article>
+						<canvas width=300 height=300 id="particleState">현재 브라우저는 html5를 지원하지 않습니다.</canvas>
+					</section>	
+					<div id="addParticle" class="btn radius-none btn-warning btn-block btn-sm">새로운 입자추가</div>
+					<div class="kindBtnWrap">
+						<div class="btn radius-none btn-danger btn-block btn-sm kindproperty" id="kindBtn_degine" style="border-right-width:0">디자인 속성</div>
+						<div class="btn radius-none btn-block btn-sm kindproperty" id="kindBtn_physics">물리 속성</div>
+					</div>
+					<!--
+						0:block
+						1:polygon
+						2:circle
+						3:text
+					-->
+					<section id="propertyArea">
+						<ul>
+							<!--BLOCK-->
+							<div class="propertyList" id="propertyList_block">							
+								<li class="title">기본설정</li>
+								<li><span>이름</span><input class="propertyInput" data-type="name" type="text"></li>
+								<li>
+									<span style="padding:5px;">타입</span>
+									<select class="propertyInput selecMaintType" data-type="type">
+										<option selected>block</option>
+										<option>polygon</option>
+										<option>circle</option>
+										<option>text</option>
+									</select>
+								</li>
+
+								<li class="title">위치</li>
+								<li><span>X</span><input class="propertyInput" data-type="x" type="text"></li>
+								<li><span>Y</span><input class="propertyInput" data-type="y" type="text"></li>
+								<li><span>origin</span><input class="propertyInput" data-type="origin" type="text"></li>
+								<li><span>zindex</span><input class="propertyInput" data-type="zindex" type="text"></li>
+							
+								<li class="title">크기</li>
+								<li><span>width</span><input class="propertyInput" data-type="width" type="text"></li>
+								<li class="sub_title">최소 최대</li>
+									<li><span>maxWidth</span><input class="propertyInput" data-type="maxWidth" type="text"></li>
+									<li><span>minWidth</span><input class="propertyInput" data-type="minWidth" type="text"></li>
+								<hr style="margin:5px 0; border-color:#ddd"/>
+								<li><span>height</span><input class="propertyInput" data-type="height" type="text"></li>
+								<li class="sub_title">최소 최대</li>
+									<li><span>maxHeight</span><input class="propertyInput" data-type="maxHeight" type="text"></li>
+									<li><span>minHeight</span><input class="propertyInput" data-type="minHeight" type="text"></li>
+								
+								<li class="title">디자인</li>
+								<li><span>background</span><input class="propertyInput" data-type="background" type="text"></li>
+								<li><span>opacity</span><input class="propertyInput" data-type="opacity" type="text"></li>
+								<li class="sub_title">테두리</li>
+								<li><span>border</span><input class="propertyInput" data-type="border" type="text"></li>
+								<li><span>borderWidth</span><input class="propertyInput" data-type="borderWidth" type="text"></li>
+								<li><span>borderColor</span><input class="propertyInput" data-type="borderColor" type="text"></li>
+
+					
+								<li class="title">이미지</li>
+								<li style="height:50px;"><span>background<br/>ImageSrc</span><input class="propertyInput" data-type="backgroundImageSrc" type="text"><br/><small>이미지의 주소를 입력해주세요</small></li>
+								<li style="height:50px;">
+									<span style="height:50px">background<br/>ImagePattern</span>
+								<select class="propertyInput selectNormalType" data-type="backgroundImagePattern">
+										<option>no-repeat</option>
+										<option>repeat</option>
+										<option>repeat-x</option>
+										<option>repeat-y</option>
+								</select>	
+								</li>
+								<li class="sub_title">이미지위치<br/><small>블럭내에서 출력될 이미지의 상대적인 위치를 지정</small></li>
+								<li style="height:50px"><span>background<br/>ImageX</span><input class="propertyInput" data-type="backgroundImageX" type="text"></li>
+								<li style="height:50px"><span>background<br/>ImageY</span><input class="propertyInput" data-type="backgroundImageY" type="text"></li>
+
+								<li class="title">회전 <small>(라디안)</small></li>
+								<li><span>rotate</span><input class="propertyInput" data-type="rotate" type="text"></li>
+								<li class="sub_title">회전 중심 <small>%(퍼센테이지)도 입력가능합니다</small></li>
+								<li class="sub_title">50%,50% -> 중심회전</li>
+
+								<li><span>rotateOriginX</span><input class="propertyInput" data-type="rotateOriginX" type="text"></li>
+								<li><span>rotateOriginY</span><input class="propertyInput" data-type="rotateOriginY" type="text"></li>
+								
+								<li class="title">기타</li>
+								<li>
+									<span>cursor</span>
+									<select class="propertyInput selectNormalType" data-type="cursor">
+										<option value="alias">alias</option>
+										<option value="all-scroll">all-scroll</option>
+										<option value="auto">auto</option>
+										<option value="cell">cell</option>
+										<option value="context-menu">context-menu</option>
+										<option value="col-resize">col-resize</option>
+										<option value="copy">copy</option>
+										<option value="crosshair">crosshair</option>
+										<option value="default" selected>default</option>
+										<option value="e-resize">e-resize</option>
+										<option value="ew-resize">ew-resize</option>
+										<option value="grab">grab</option>
+										<option value="grabbing">grabbing</option>
+										<option value="help">help</option>
+										<option value="move">move</option>
+										<option value="n-resize">n-resize</option>
+										<option value="ne-resize">ne-resize</option>
+										<option value="nesw-resize">nesw-resize</option>
+										<option value="ns-resize">ns-resize</option>
+										<option value="nw-resize">nw-resize</option>
+										<option value="nwse-resize">nwse-resize</option>
+										<option value="no-drop">no-drop</option>
+										<option value="none">none</option>
+										<option value="not-allowed">not-allowed</option>
+										<option value="pointer">pointer</option>
+										<option value="progress">progress</option>
+										<option value="row-resize">row-resize</option>
+										<option value="s-resize">s-resize</option>
+										<option value="se-resize">se-resize</option>
+										<option value="sw-resize">sw-resize</option>
+										<option value="text">text</option>
+										<option value="URL">URL</option>
+										<option value="vertical-text">vertical-text</option>
+										<option value="w-resize">w-resize</option>
+										<option value="wait">wait</option>
+										<option value="zoom-in">zoom-in</option>
+										<option value="zoom-out">zoom-out</option>
+										<option value="initial">initial</option>
+										<option value="inherit">inherit</option>
+									</select>	
+								</li>
+							</div>
+
+							<!--POLYGON 폴리곤의 VERTEX 설정은 STATEcanvas로-->
+							<div class="propertyList" id="propertyList_polygon">
+								<li class="title">기본설정</li>
+								<li><span>이름</span><input class="propertyInput" data-type="name" type="text"></li>
+								<li>
+									<span style="padding:5px;">타입</span>
+									<select class="propertyInput selecMaintType" data-type="type">
+										<option>block</option>
+										<option selected>polygon</option>
+										<option>circle</option>
+										<option>text</option>
+									</select>
+								</li>
+								<li class="title">정점<div id="vertexPlus">추가</div></li>
+								<li style="padding:0">
+									<select vertex-index="0" selected-vertex-index="0" id="vertexInfo" style="width:100%; height:25px; margin-bottom:5px; background:#eee; border:0">
+										<option value="0">정점 1</option>
+									</select>
+								</li>
+								<li><span>X 성분</span><input class="propertyInput" data-type="vertex" id="Vx" lotation="0" type="text" placeholder="정점의 X성분"></li>
+								<li><span>Y 성분</span><input class="propertyInput" data-type="vertex" id="Vy" lotation="1" type="text" placeholder="정점의 Y성분"></li>
+								<li class="comment"><small>정점을 추가하면서 폴리곤을 제작하실 수 있습니다.<br/>이 속성은 원점을 첫 정점으로 <b><u>폴리곤의 형태를 정의합니다.</u></b></small></li>
+								<li class="title">위치 <small></small></li>
+								<li><span>X</span><input class="propertyInput" data-type="x" type="text"></li>
+								<li><span>Y</span><input class="propertyInput" data-type="y" type="text"></li>
+								<li><span>zindex</span><input class="propertyInput" data-type="zindex" type="text"></li>
+								
+								<li class="title">디자인</li>
+								<li><span>background</span><input class="propertyInput" data-type="background" type="text"></li>
+								<li><span>opacity</span><input class="propertyInput" data-type="opacity" type="text"></li>
+								<li class="sub_title">테두리</li>
+								<li><span>border</span><input class="propertyInput" data-type="border" type="text"></li>
+								<li><span>borderWidth</span><input class="propertyInput" data-type="borderWidth" type="text"></li>
+								<li><span>borderColor</span><input class="propertyInput" data-type="borderColor" type="text"></li>
+								<li class="sub_title">선 연결</li>
+								<li>
+									<span>lineJoin</span>
+									<select class="propertyInput selectNormalType" data-type="lineJoin">
+										<option value="bevel">bevel</option>
+										<option value="round">round</option>
+										<option value="miter">miter</option>
+									</select>
+								</li>
+								<li class="title">회전 <small>(라디안)</small></li>
+								<li class="comment"><small>폴리곤은 무게중심을 기준으로 회전합니다.</small></li>
+								<li><span>rotate</span><input class="propertyInput" data-type="rotate" type="text"></li>
+								<li class="title">기타</li>
+								<li>
+									<span>cursor</span>
+									<select class="propertyInput selectNormalType" data-type="cursor">
+										<option value="alias">alias</option>
+										<option value="all-scroll">all-scroll</option>
+										<option value="auto">auto</option>
+										<option value="cell">cell</option>
+										<option value="context-menu">context-menu</option>
+										<option value="col-resize">col-resize</option>
+										<option value="copy">copy</option>
+										<option value="crosshair">crosshair</option>
+										<option value="default" selected>default</option>
+										<option value="e-resize">e-resize</option>
+										<option value="ew-resize">ew-resize</option>
+										<option value="grab">grab</option>
+										<option value="grabbing">grabbing</option>
+										<option value="help">help</option>
+										<option value="move">move</option>
+										<option value="n-resize">n-resize</option>
+										<option value="ne-resize">ne-resize</option>
+										<option value="nesw-resize">nesw-resize</option>
+										<option value="ns-resize">ns-resize</option>
+										<option value="nw-resize">nw-resize</option>
+										<option value="nwse-resize">nwse-resize</option>
+										<option value="no-drop">no-drop</option>
+										<option value="none">none</option>
+										<option value="not-allowed">not-allowed</option>
+										<option value="pointer">pointer</option>
+										<option value="progress">progress</option>
+										<option value="row-resize">row-resize</option>
+										<option value="s-resize">s-resize</option>
+										<option value="se-resize">se-resize</option>
+										<option value="sw-resize">sw-resize</option>
+										<option value="text">text</option>
+										<option value="URL">URL</option>
+										<option value="vertical-text">vertical-text</option>
+										<option value="w-resize">w-resize</option>
+										<option value="wait">wait</option>
+										<option value="zoom-in">zoom-in</option>
+										<option value="zoom-out">zoom-out</option>
+										<option value="initial">initial</option>
+										<option value="inherit">inherit</option>
+									</select>	
+								</li>
+							</div>
+
+							<div class="propertyList" id="propertyList_circle">
+								<li class="title">기본설정</li>
+								<li><span>이름</span><input class="propertyInput" data-type="name" type="text"></li>
+								<li>
+									<span style="padding:5px;">타입</span>
+									<select class="propertyInput selecMaintType" data-type="type">
+										<option>block</option>
+										<option selected>polygon</option>
+										<option>circle</option>
+										<option>text</option>
+									</select>
+								</li>
+								<li class="title">반지름</li>
+								<li><span>r</span><input class="propertyInput" data-type="r" type="text"></li>
+								
+								<li class="title">디자인</li>
+								<li><span>background</span><input class="propertyInput" data-type="background" type="text"></li>
+								<li><span>opacity</span><input class="propertyInput" data-type="opacity" type="text"></li>
+								<li class="sub_title">테두리</li>
+								<li><span>border</span><input class="propertyInput" data-type="border" type="text"></li>
+								<li><span>borderWidth</span><input class="propertyInput" data-type="borderWidth" type="text"></li>
+								<li><span>borderColor</span><input class="propertyInput" data-type="borderColor" type="text"></li>
+					
+								<li class="title">기타</li>
+								<li>
+									<span>cursor</span>
+									<select class="propertyInput selectNormalType" data-type="cursor">
+										<option value="alias">alias</option>
+										<option value="all-scroll">all-scroll</option>
+										<option value="auto">auto</option>
+										<option value="cell">cell</option>
+										<option value="context-menu">context-menu</option>
+										<option value="col-resize">col-resize</option>
+										<option value="copy">copy</option>
+										<option value="crosshair">crosshair</option>
+										<option value="default" selected>default</option>
+										<option value="e-resize">e-resize</option>
+										<option value="ew-resize">ew-resize</option>
+										<option value="grab">grab</option>
+										<option value="grabbing">grabbing</option>
+										<option value="help">help</option>
+										<option value="move">move</option>
+										<option value="n-resize">n-resize</option>
+										<option value="ne-resize">ne-resize</option>
+										<option value="nesw-resize">nesw-resize</option>
+										<option value="ns-resize">ns-resize</option>
+										<option value="nw-resize">nw-resize</option>
+										<option value="nwse-resize">nwse-resize</option>
+										<option value="no-drop">no-drop</option>
+										<option value="none">none</option>
+										<option value="not-allowed">not-allowed</option>
+										<option value="pointer">pointer</option>
+										<option value="progress">progress</option>
+										<option value="row-resize">row-resize</option>
+										<option value="s-resize">s-resize</option>
+										<option value="se-resize">se-resize</option>
+										<option value="sw-resize">sw-resize</option>
+										<option value="text">text</option>
+										<option value="URL">URL</option>
+										<option value="vertical-text">vertical-text</option>
+										<option value="w-resize">w-resize</option>
+										<option value="wait">wait</option>
+										<option value="zoom-in">zoom-in</option>
+										<option value="zoom-out">zoom-out</option>
+										<option value="initial">initial</option>
+										<option value="inherit">inherit</option>
+									</select>	
+								</li>
+							</div>
+
+							<!--TEXT-->
+							<div class="propertyList" id="propertyList_text">
+								<li class="title">기본설정</li>
+								<li><span>이름</span><input type="text"></li>
+								<li>
+									<span style="padding:5px;">타입</span>
+									<select class="selecMaintType">
+										<option>block</option>
+										<option>polygon</option>
+										<option>circle</option>
+										<option selected>text</option>
+									</select>
+								</li>
+
+								<li class="title">위치</li>
+								<li><span>X</span><input type="text"></li>
+								<li><span>Y</span><input type="text"></li>
+								<li><span>ORIGIN</span><input type="text"></li>
+								<li><span>zIndex</span><input type="text"></li>
+							
+								<li class="title">크기</li>
+								<li><span>width</span><input type="text"></li>
+								<li><span>height</span><input type="text"></li>
+														<li class="title">디자인</li>
+								<li><span>background</span><input type="text"></li>
+								<li><span>opacity</span><input type="text"></li>
+								<li class="sub_title">테두리</li>
+								<li><span>border</span><input type="text"></li>
+								<li><span>borderWidth</span><input type="text"></li>
+								<li><span>borderColor</span><input type="text"></li>
+
+					
+								<li class="title">이미지</li>
+								<li style="height:50px;"><span>background<br/>ImageSrc</span><input type="text"></li>
+								<li style="height:50px;">
+									<span style="height:50px">background<br/>ImagePattern</span>
+								<select class="selectNormalType">
+										<option>no-repeat</option>
+										<option>repeat</option>
+										<option>repeat-x</option>
+										<option>repeat-y</option>
+									</select>	
+								</li>
+								<li class="sub_title">이미지위치</li>
+								<li style="height:50px"><span>background<br/>ImageX</span><input type="text"></li>
+								<li style="height:50px"><span>background<br/>ImageY</span><input type="text"></li>
+
+								<li class="title">중심</li>
+								<li><span>rotate</span><input type="text"></li>
+								<li class="sub_title">회전 중심</li>
+								<li><span>rotateOriginX</span><input type="text"></li>
+								<li><span>rotateOriginY</span><input type="text"></li>
+							</div>
+						</ul>
+					</section>
+				</article>
+			</section>
+		</section>
+		<script type="text/javascript">
+			var stateTarget=new Object(),engine;
+			window.onload=function(){
+				liveView=new Canvas("#liveView",function(){ //callback
+					this.drawElement("EVENT",{
+						onlyBaseElement:true
+					})
+					this.element("EVENT").click(function(e,key){
+						updateParticleState(key,liveView.element(key).getInfo())
+					});
+				});
+
+				stateView=new Canvas("#particleState",function(){
+					this.$systemValue.rotateCenter=true;
+					var stateWrap=document.getElementById("particleInfo");
+					var th=this;
+					this.$canvas.onwheel=function(e){
+						if(!stateTarget.name){
+							return
+						}
+						var direct=e.deltaY<0 ? 0 : 1;
+						var deltaScale=0.1;
+						var nowScale=th.element(stateTarget.name).cvss("scale");
+						if(direct){
+							th.element(stateTarget.name).cvss("scale",[nowScale[0]+deltaScale,nowScale[1]+deltaScale]);
+						}else{
+							th.element(stateTarget.name).cvss("scale",[nowScale[0]-deltaScale,nowScale[1]-deltaScale]);
+						}
+					}	
+	
+
+					this.drawElement({
+						WINDOW:{
+							x:0,y:0,
+							width:this.$canvas.width,
+							height:this.$canvas.height,
+							zIndex:1000
+						},
+						LOTATION:{
+							type:"text",
+							content:"",
+							fontSize:"12px",
+							fontFamily:"맑은 고딕",
+							x:this.$canvas.width-5,
+							textAlign:"right",
+							textBaseline:"top",
+							zIndex:900
+
+						},
+						NAME:{
+							type:"text",
+							content:"",
+							fontSize:"15px",
+							fontFamily:"맑은 고딕",
+							x:10,
+							y:this.$canvas.height-10,
+							zIndex:900
+						}
+					});
+					this.element("WINDOW").mousemove(function(e){
+						this.element("LOTATION").cvss("content","x : "+e.x+" , y : "+e.y);
+					});
+					var prevPosition={x:0,y:0};
+					this.element("WINDOW").dragstart(function(e){
+						prevPosition={x:e.x,y:e.y};
+					})
+					this.element("WINDOW").drag(function(e){
+						if(!stateTarget.name){
+							return
+						}
+						var nowPosition=th.element(stateTarget.name).cvss("translate");
+						var deltaScale=5;
+						if(prevPosition.x==e.x && prevPosition.y==e.y){
+							return
+						}
+						var direct={
+							x:(prevPosition.x-e.x>0) ? 0 : 1,
+							y:(prevPosition.y-e.y>0) ? 0 : 1
+
+						}
+						var nX=direct.x ? nowPosition[0]+deltaScale : nowPosition[0]-deltaScale;
+						var nY=direct.y ? nowPosition[1]+deltaScale : nowPosition[1]-deltaScale;
+						th.element(stateTarget.name).cvss("translate",[nX,nY]);
+						prevPosition={x:e.x,y:e.y}
+					});					
+				});
+
+
+
+
+
+				var inputs=document.getElementsByClassName("propertyInput");
+				function updateProperty(type,element){
+					if(type=="vertex"){
+						var vertexInfo=document.getElementById("vertexInfo");
+						var index=vertexInfo.getAttribute("selected-vertex-index");
+						var vertex=liveView.element(stateTarget.name).cvss("vertex");
+						if(!vertex){
+							vertex=[]
+						}
+						if(Object.prototype.toString.call( vertex[index] ) !== '[object Array]'){
+							vertex[index]=[];
+						}
+						vertex[index][element.getAttribute("lotation")]=element.value;
+						liveView.element(stateTarget.name).cvss("vertex",vertex);
+						updateParticleState(stateTarget.name)
+						return ;
+					}else if(type=="name"){
+						if(liveView.element(stateTarget.name).rename(element.value)){
+							stateView.element(stateTarget.name).rename(element.value);
+							stateTarget.name=element.value;
+							//엔진 particle 이름
+							updateParticleState(stateTarget.name);
+						}else{
+							alert(element.value+"는 이미 존재하는 이름입니다.")
+						}
+					}else{
+						var obj=new Object();
+						obj[type]=element.value;						
+						updateLiveCanvas(stateTarget.name,obj);
+					}
+				}
+				for(var i=0; i<inputs.length; i++){
+					inputs[i].onchange=function(){
+						updateProperty(this.getAttribute("data-type"),this)
+					};
+				}
+				var run=document.getElementById("run");
+				run.onclick=function(){
+					if(this.getAttribute("data-toggle")=="run"){
+						engine=new Engine(liveView,{
+							fps:30,
+							gravity:[0,100]
+						});
+						for(var i=0; i<liveView.$elementKey.length; i++){
+							engine.particle(liveView.$elementKey[i]);
+						}
+						this.innerHTML="STOP";
+						this.setAttribute("data-toggle","stop")				
+					}else{
+						this.innerHTML="RUN";
+						this.setAttribute("data-toggle","run")						
+					}
+
+				}
+				document.getElementById("vertexInfo").onchange=function(){
+					var vertexInfo=document.getElementById("vertexInfo");
+					this.setAttribute("selected-vertex-index",Number(this.value));
+					var vertex=liveView.element(stateTarget.name).cvss("vertex");
+					if(vertex[this.value]){
+						document.getElementById('Vx').value=vertex[this.value][0];
+						document.getElementById('Vy').value=vertex[this.value][1];
+					}
+				}
+				var vertexPlus=document.getElementById("vertexPlus");
+				vertexPlus.onclick=function(){
+					var vertexInfo=document.getElementById("vertexInfo");
+					var index=Number(vertexInfo.getAttribute("vertex-index"));
+					
+					obj=liveView.element(stateTarget.name).cvss("vertex");
+					if(obj && obj[index] && (!isNaN(obj[index][0]) && !isNaN(obj[index][1]))){
+						index++;
+						vertexInfo.options.add(new Option("정점 "+(index+1),index));
+						vertexInfo.options[index].selected=true;
+						vertexInfo.setAttribute("vertex-index",index);
+						vertexInfo.setAttribute("selected-vertex-index",index);		
+						document.getElementById("Vx").value="";
+						document.getElementById("Vy").value="";
+					}
+				}
+
+				var kindproperty=document.getElementsByClassName("kindproperty");
+				for(i=0; i<kindproperty.length; i++){
+					kindproperty[i].onclick=function(){
+						var active=this.getAttribute("data-toggle");
+						if(active=="active"){
+							return;
+						}else{
+							this.classList.add("btn-danger");
+							this.setAttribute("data-toggle","active");
+							var o=this.getAttribute("id")=="kindBtn_degine" ? "kindBtn_physics" : "kindBtn_degine";
+							o=document.getElementById(o);
+							o.classList.remove("btn-danger");
+							o.removeAttribute("data-toggle")
+						}
+					}
+				}
+				resize();
+			}
+
+
+			window.onresize=resize;
+			function resize(){
+				liveView.$canvas.width=document.documentElement.clientWidth-510;
+				liveView.$canvas.height=document.documentElement.clientHeight-10;
+				updateLiveCanvas()
+			}
+
+			function updateLiveCanvas(name,info){
+				if(!name){
+					liveView.drawElement({});
+					return
+				}
+				liveView.drawElement(name,info);
+
+				updateParticleState(name)
+			}
+			function updateParticleState(name){
+				var info=Canvas.prototype.CopyObj(liveView.$element[name]);
+
+				if(liveView.$systemValue.EVENT[name].center){ //무게중심을 계산할 수있 입자만을 중앙에 위치한다
+					info.x=stateView.$canvas.width/2-(liveView.$systemValue.EVENT[name].center[0]-liveView.element(name).cvss("x"));
+					info.y=stateView.$canvas.height/2-(liveView.$systemValue.EVENT[name].center[1]-liveView.element(name).cvss("y"));
+				}else{
+					info.x=0;
+					info.y=0;
+				}
+				if(stateTarget.name){
+					stateView.element(stateTarget.name).remove();
+				}
+				stateView.drawElement(name,info);
+				stateView.element("NAME").cvss("content",name);
+
+				if(stateTarget.property){
+					var list=document.getElementById("propertyList_"+stateTarget.property.type);
+					list.style.display="none";
+				}
+
+				//현재 클릭한 입자의 정보
+				stateTarget.name=name;
+				stateTarget.property=liveView.element(name).getInfo();
+				
+				var list=document.getElementById("propertyList_"+stateTarget.property.type);
+				list.style.display="block";
+					
+				var vertex=liveView.element(stateTarget.name).cvss("vertex");
+				var vertexInfo=document.getElementById("vertexInfo");
+
+	
+
+				var inputs=document.getElementsByClassName("propertyInput");
+
+				var Key=Object.keys(stateTarget.property);
+				for(var i=0; i<inputs.length; i++){
+					var item=inputs[i];
+					var type=item.getAttribute("data-type");
+					var index=Key.indexOf(type);
+
+					if(type=="name"){
+						item.value=name;
+						continue;
+					}
+					if(type=="vertex"){
+						var lotation=item.getAttribute("lotation");
+						var seletedIndex=vertexInfo.getAttribute("selected-vertex-index");
+						if(vertex && vertex[seletedIndex] && vertex[seletedIndex][item.getAttribute("lotation")]){
+							item.value=vertex[seletedIndex][item.getAttribute("lotation")];
+						}
+						continue;
+					}
+
+					if(index!==-1){
+						item.value=stateTarget.property[Key[index]];
+					}else{
+						if(type=="cursor"){
+							item.value="default";
+							continue;
+						}
+						item.value=""
+						item.setAttribute("placeholder","아직 등록된 값이 없습니다");
+					}
+				}
+			}
+
+			var addParticleBtn=document.getElementById("addParticle");
+			addParticleBtn.onclick=function(){
+				//init엘레먼트
+				updateLiveCanvas("particle"+(liveView.$elementKey.length),{
+					type:"block",
+					background:"#aaa",
+					x:Math.floor(Math.random()*liveView.$canvas.width),
+					y:Math.floor(Math.random()*liveView.$canvas.height),
+					baseEventElement:"EVENT",
+					rotate:0,
+				});
+			}
+
+		</script>
+	</body>
+</html>
