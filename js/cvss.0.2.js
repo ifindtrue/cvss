@@ -3,9 +3,12 @@ CVSS javascript Libaray - Version 0.2
 made by
 *************************************************************************/
 (function(window){
-	window.Canvas=function Canvas(/*optional*/id){
+	window.Canvas=function Canvas(/*optional*/id,callback){
 		if(typeof id=="string"){
 			this.target(id);
+			if(typeof callback=="function"){
+				callback.apply(this,[]);
+			}
 		}
 	}
 	Canvas.prototype.target=function(name){
@@ -54,15 +57,19 @@ made by
 				dragOn:false,
 				dragElement:undefined,
 				eventFunc:{},//객체{이벤트 타입:함수}
-				windowEvent:{},
-				eventPointer:{},//block 이나 polygon의 점들의 좌표를 보관한다.
+				EVENT:{},//block 이나 polygon의 점들의 좌표를 보관한다.
 				imageData:[],
 				imageSrc:[],
 				imageDataMatch:{},
 				STACK:[],
+				rotateCenter:false,//질량중심회전
 				elementType:["block","polygon","circle","text"],
-				elementEventType:["mouseup","mousedown","click","mousein","mouseout","dblclick","dragstart","drag","drop"],
-				backgroundRepeatType:["no-repeat","repeat","repeat-y","repeat-x"]
+				elementEventType:["mouseup","mousedown","click","mousein","mouseout","dblclick","dragstart","drag","drop","mousemove"],
+				backgroundRepeatType:["no-repeat","repeat","repeat-y","repeat-x"],
+				lineJoinType:["bevel","round","miter"],
+				transform:{
+					scale:[1,1]
+				}
 			}
 		}else{
 			console.warn("CvSS ERROR : "+name+" 캔버스를 찾을 수 없습니다.");
@@ -95,12 +102,9 @@ made by
 		return 0;
 	}
 	Canvas.prototype.detectMOUSEMOVE=function(event){
-		var e=Canvas.prototype.getRealMousePosition(event),i,j,
+		var e=this.getRealMousePosition(event),i,j,
 			sys=this.$systemValue,insideCheck=false,element;
 
-		if(typeof sys.windowEvent.mousemove=="function"){ //윈도우 함수가 등록되어있으면 실행한다.
-			sys.windowEvent.mousemove.apply(this,[e]);
-		}
 		if(sys.prevEventType=="mousedown"){ // 드래그판정
 			if(sys.dragOn===false){
 				sys.dragOn=true;
@@ -130,14 +134,14 @@ made by
 		{
 			element=this.$element[this.$elementKey[i]];
 			if(element.show===false || element.onlyBaseElement===true){continue;}
-			var tempE=sys.eventPointer[this.$elementKey[i]];
+			var tempE=sys.EVENT[this.$elementKey[i]];
 			switch(element.type){
 				case "block":
 				case "polygon":
 					insideCheck=Canvas.prototype.polygonInsideCheck({x:e.x,y:e.y},tempE.vertex);
 					break;
 				case "circle":
-					var c=sys.eventPointer[this.$elementKey[i]].c,a=sys.eventPointer[this.$elementKey[i]].a;
+					var c=sys.EVENT[this.$elementKey[i]].c,a=sys.EVENT[this.$elementKey[i]].a;
 					if(Math.sqrt(Math.pow(e.x-c.x,2)+Math.pow(e.y-c.y,2))+Math.sqrt(Math.pow(e.x-c.mirrorx,2)+Math.pow(e.y-c.mirrory,2))<a*2){
 						insideCheck=true;
 					}
@@ -149,6 +153,9 @@ made by
 					e.origin=[e.x-this.$element[key].$x,e.y-this.$element[key].$y]
 				}
 				this.$canvas.style.cursor=element.cursor || this.$initElement.cursor;
+				if(sys.eventFunc[key] && typeof sys.eventFunc[key].mousemove=="function"){sys.eventFunc[key].mousemove.apply(this,[e,key]);
+				}else if(this.$element[key].baseEventElement && sys.eventFunc[this.$element[key].baseEventElement] && typeof sys.eventFunc[this.$element[key].baseEventElement].mousemove=="function"){sys.eventFunc[this.$element[key].baseEventElement].mousemove.apply(this,[e,key]);}
+				
 				if(sys.prevOverElement==key){return;}
 				if(sys.prevOverElement && sys.prevOverElement!=key && sys.eventFunc[sys.prevOverElement] && typeof sys.eventFunc[sys.prevOverElement].mouseout == "function"){sys.eventFunc[sys.prevOverElement].mouseout.apply(this,[e,sys.prevOverElement]);}
 				else if(sys.prevOverElement && sys.prevOverElement!=key && this.$element[sys.prevOverElement].baseEventElement && sys.eventFunc[this.$element[sys.prevOverElement].baseEventElement] && typeof sys.eventFunc[this.$element[sys.prevOverElement].baseEventElement].mouseout=="function"){sys.eventFunc[this.$element[sys.prevOverElement].baseEventElement].mouseout.apply(this,[e,sys.prevOverElement]);}
@@ -164,11 +171,8 @@ made by
 		this.$canvas.style.cursor="default";
 	}
 	Canvas.prototype.detectMOUSEDU=function(event,type){
-		var e=Canvas.prototype.getRealMousePosition(event),i,
+		var e=this.getRealMousePosition(event),i,
 			insideCheck=false,j,element,sys=this.$systemValue;
-		if(typeof sys.windowEvent[type]=="function"){
-			sys.windowEvent[type].apply(this,e);
-		}
 		if(type=="mouseup" && sys.dragOn){
 			sys.dragOn=false;
 			if(sys.eventFunc[sys.dragElement] && typeof sys.eventFunc[sys.dragElement].drop=="function"){
@@ -180,14 +184,14 @@ made by
 		for(i=this.$elementKey.length-1; i>=0; i--){
 			element=this.$element[this.$elementKey[i]];
 			if(element.show===false || element.onlyBaseElement===true){continue;}
-			var tempE=sys.eventPointer[this.$elementKey[i]];
+			var tempE=sys.EVENT[this.$elementKey[i]];
 			switch(element.type){
 				case "block":
 				case "polygon":
 					insideCheck=Canvas.prototype.polygonInsideCheck({x:e.x,y:e.y},tempE.vertex);
 					break;
 				case "circle":
-					var c=sys.eventPointer[this.$elementKey[i]].c,a=sys.eventPointer[this.$elementKey[i]].a;
+					var c=sys.EVENT[this.$elementKey[i]].c,a=sys.EVENT[this.$elementKey[i]].a;
 					if(Math.sqrt(Math.pow(e.x-c.x,2)+Math.pow(e.y-c.y,2))+Math.sqrt(Math.pow(e.x-c.mirrorx,2)+Math.pow(e.y-c.mirrory,2))<a*2){
 						insideCheck=true;
 					}
@@ -351,12 +355,12 @@ made by
 			var f=0,l=this.$elementKey.length;
 			while( f < l ){
 				var mid=parseInt((f+l)/2);
-				if(info[this.$elementKey[mid]].zindex==info[value].zindex){
+				if((info[this.$elementKey[mid]].zindex || 0)==(info[value].zindex || 0)){
 					this.$elementKey.splice(mid,0,value);
 					apply=true;
 					break;
 				}
-				else if(info[this.$elementKey[mid]].zindex>info[value].zindex){
+				else if((info[this.$elementKey[mid]].zindex || 0)>(info[value].zindex || 0)){
 					l=mid-1;
 				}else{
 					f=mid+1;
@@ -371,6 +375,7 @@ made by
 		K=this.$elementKey; //$elementKey에 정렬된 key순서를 적용한다, 다른 함수(이벤트함수)에서도 엘레먼트의 출력순서는 꼭 필요하다
 
 		var patterns=sys.backgroundRepeatType; //block속성 중 background기능에서 repeat의 허용범위를 지정해준 배열을 불러온다.
+		C.scale(sys.transform.scale[0],sys.transform.scale[1]); // 화면
 
 		for(var i=0; i<K.length; i++){
 			var t,x=NaN,y=NaN,width=NaN,height=NaN,temp=NaN,border={width:0,color:0},sourceX=NaN,sourceY=NaN,src=NaN,pattern=NaN,origin=NaN,borderArr=NaN,TempX=NaN,TempY=NaN; //대표적인 속성값을 NaN으로 초기화한다.
@@ -379,6 +384,19 @@ made by
 			$E=this.$element[K[i]];
 
 			C.save();
+			if(Object.prototype.toString.call( E.scale ) === '[object Array]' && E.scale.length==2){
+				C.scale(E.scale[0],E.scale[1]);
+			}
+			if(Object.prototype.toString.call( E.translate ) === '[object Array]' && E.translate.length==2){
+				C.translate(E.translate[0],E.translate[1]);
+			}
+			if(Object.prototype.toString.call( E.skew ) === '[object Array]' && E.skew.length==2){
+				//E.scale=[initElement.skew[0],initElement.skew[1]]
+			}
+
+
+			//C.scale(E.scale[0],E.scale[1]);
+
 			if(typeof E.baseElement=="string" && ($E && $E.baseElement)!=E.baseElement){
 				E.baseStyleElement=($E && $E.baseStyleElement)==E.baseStyleElement ? E.baseElement : E.baseStyleElement;
 				E.baseEventElement=($E && $E.baseEventElement)==E.baseEventElement ? E.baseElement : E.baseEventElement;
@@ -391,11 +409,10 @@ made by
 			}
 			E.opacity=numberFormat(E.opacity,$E && $E.opacity || 0,initElement.opacity);
 			C.globalAlpha=E.opacity;
-
-			if(!sys.eventPointer[K[i]]){
-				sys.eventPointer[K[i]]={};
+			if(!sys.EVENT[K[i]]){
+				sys.EVENT[K[i]]={};
 			}
-			event=sys.eventPointer[K[i]];
+			event=sys.EVENT[K[i]];
 			var applyNewProperty=E.$temp || !$E;
 			
 			//공통 속성
@@ -457,51 +474,34 @@ made by
 						y-=persentFormat(E.height,origin[1],initElement.origin[1]);
 
 						C.fillStyle=E.background ? E.background: initElement.background;
+						
+						if(E.backgroundImageSrc){
+							E.backgroundImagePattern=patterns.indexOf(E.backgroundImagePattern)!=-1 ? E.backgroundImagePattern : initElement.backgroundImagePattern;
+							E.backgroundImageX=numberFormat(E.backgroundImageX,($E && $E.backgroundImageX)||0,initElement.backgroundImageX);
+							E.backgroundImageY=numberFormat(E.backgroundImageY,($E && $E.backgroundImageY)||0,initElement.backgroundImageY);
 
-						if(E.backgroundImage){
-							if(typeof E.backgroundImage=="string"){
-								temp=E.backgroundImage.split(" ");
-								src=temp[0] || initElement.backgroundImage.src;
-								pattern=patterns.indexOf(temp[1])!=-1 ? temp[1] : initElement.backgroundImage.pattern;
-								sourceX=numberFormat(temp[2],($E && $E.backgroundImageX)||0,0);
-								sourceY=numberFormat(temp[3],($E && $E.backgroundImageY)||0,0);
-							}
-							if((!$E && E.backgroundImageSrc) || ($E && $E.backgroundImageSrc!=E.backgroundImageSrc)){src=E.backgroundImageSrc;}
-							if((!$E && E.backgroundImagePattern) || ($E && $E.backgroundImagePattern!=E.backgroundImagePattern)){pattern=patterns.indexOf(E.backgroundImagePattern)==-1?initElement.backgroundImage.pattern : E.backgroundImagePattern}
-							if((!$E && typeof E.backgroundImageX=="number") || ($E && $E.backgroundImageX!=E.backgroundImageX)){
-								sourceX=numberFormat(E.backgroundImageX,($E && $E.backgroundImageX)||0,0);
-							}
+							src=E.backgroundImageSrc;
+							pattern=E.backgroundImagePattern;
+							sourceX=E.backgroundImageX;
+							sourceY=E.backgroundImageY;				
+						}
 
-							if((!$E && typeof E.backgroundImageY)=="number" || ($E && $E.backgroundImageY!=E.backgroundImageY)){
-								sourceY=numberFormat(E.backgroundImageY,($E && $E.backgroundImageY)||0,0);
-							}
-							E.backgroundImage=src+" "+pattern+" "+sourceX+" "+sourceY;
-							E.backgroundImageSrc=src;
-							E.backgroundImagePattern=pattern;
-							E.backgroundImageX=sourceX;
-							E.backgroundImageY=sourceY;				
-						}
-						if(typeof E.scaleX=="number"){
-							E.scaleX=numberFormat(persentFormat(E.width,E.scaleX,initElement.scale.x),($E && $E.scaleX),initElement.scale.x);
-						}
-						if(typeof E.scaleY=="number"){
-							E.scaleY=numberFormat(persentFormat(E.height,E.scaleY.initElement.scale.y),($E && $E.scaleY),initElement.scale.y);
-						}
+						event.area=E.width*E.height;
+						event.center=[x+E.width/2,y+E.height/2];
 						if(E.rotate){ //transform
 							E.rotate=numberFormat(E.rotate,$E && $E.rotate,initElement.rotate,false);
-
-							E.rotateOriginX=numberFormat(persentFormat(E.width,E.rotateOriginX,initElement.rotateOrigin.x),($E && $E.rotateOriginX),initElement.rotateOrigin.x);
-							E.rotateOriginY=numberFormat(persentFormat(E.height,E.rotateOriginY,initElement.rotateOrigin.y),($E && $E.rotateOriginY),initElement.rotateOrigin.y);
+							if(sys.rotateCenter===true){
+							E.rotateOriginX=E.width/2;
+							E.rotateOriginY=E.height/2;
+							}else{
+							E.rotateOriginX=numberFormat(persentFormat(E.width,E.rotateOriginX,initElement.rotateOriginX),($E && $E.rotateOriginX),initElement.rotateOriginX);
+							E.rotateOriginY=numberFormat(persentFormat(E.height,E.rotateOriginY,initElement.rotateOriginY),($E && $E.rotateOriginY),initElement.rotateOriginY);
+							}
 							var cos=Math.cos(E.rotate);
 							var sin=Math.sin(E.rotate);
 
-							var center=[x+persentFormat(E.width,"50%",initElement.rotateOrigin.x),y+persentFormat(E.height,"50%",initElement.rotateOrigin.y)];
-
-							event.area=E.width*E.height;
-							event.center=center;							
-
 							//x+rotateOriginX
-							event.vertex=[[-E.rotateOriginX*cos+E.rotateOriginY*sin+x,-E.rotateOriginX*sin-E.rotateOriginY*cos+y],[(width-E.rotateOriginX)*cos+E.rotateOriginY*sin+x,(width-E.rotateOriginX)*sin-E.rotateOriginY*cos+y],[(width-E.rotateOriginX)*cos-(height-E.rotateOriginY)*sin+x,(width-E.rotateOriginX)*sin+(height-E.rotateOriginY)*cos+y],[-E.rotateOriginX*cos-(height-E.rotateOriginY)*sin+x,-E.rotateOriginX*sin+(height-E.rotateOriginY)*cos+y]];	
+							event.vertex=[[-E.rotateOriginX*cos+E.rotateOriginY*sin+x+E.rotateOriginX,-E.rotateOriginX*sin-E.rotateOriginY*cos+y+E.rotateOriginY],[(width-E.rotateOriginX)*cos+E.rotateOriginY*sin+x+E.rotateOriginX,(width-E.rotateOriginX)*sin-E.rotateOriginY*cos+y+E.rotateOriginY],[(width-E.rotateOriginX)*cos-(height-E.rotateOriginY)*sin+x+E.rotateOriginX,(width-E.rotateOriginX)*sin+(height-E.rotateOriginY)*cos+y+E.rotateOriginY],[-E.rotateOriginX*cos-(height-E.rotateOriginY)*sin+x+E.rotateOriginX,-E.rotateOriginX*sin+(height-E.rotateOriginY)*cos+y+E.rotateOriginY]];	
 							t=event.vertex;
 						}else{
 							event.vertex=[[x,y],[x+width,y],[x+width,y+height],[x,y+height]];	
@@ -515,11 +515,16 @@ made by
 						y=E.$y;
 						width=E.width;
 						height=E.height;
-
+						if(E.minWidth){
+							E.minWidth=numberFormat(persentFormat(this.$canvas.width,E.minWidth,0),($E && $E.minWidth) || 0,0);
+							width=E.minWidth<E.width ? E.width : E.minWidth;
+						}
+						if(E.maxWidth){
+							E.maxWidth=numberFormat(persentFormat(this.$canvas.width,E.maxWidth,width),($E && $E.maxWidth) || 0,width);
+							width=E.maxWidth<width ? E.maxWidth : width;
+						}
 						C.fillStyle=E.background ? E.background: initElement.background;
-						C.lineWidth=E.borderWidth;
-						C.strokeStyle=E.borderColor;
-						if(E.backgroundImage){
+						if(E.backgroundImageSrc){
 							sourceX=E.backgroundImageX;
 							sourceY=E.backgroundImageY;
 							pattern=E.backgroundImagePattern;
@@ -527,15 +532,15 @@ made by
 						}
 					}
 								
-					if(E.backgroundImage){
-						var index=this.$imageSrc.indexOf(src);
+					if(E.backgroundImageSrc){
+						var index=sys.imageSrc.indexOf(src);
 						if(index == -1){
 							var image=new Image(),th=this;
 							image.onload=function(){
 								sys.imageData.push(this);
 								sys.imageSrc.push(this.src);
 								sys.imageDataMatch[K[i]]=sys.imageData.length-1;
-								th.drawElement(th.$E);
+								th.drawElement(th.$element);
 							};
 							image.src=src;
 							E.$backgroundImage={
@@ -550,29 +555,28 @@ made by
 					}
 					if(E.show===false || E.show=="false"){
 						E.show=false;
-						this.$E[K[i]]=E;
+						this.$element[K[i]]=E;
 						C.restore();
 						continue;												
 					}
 					if( E.onlyBaseElement===true || E.onlyBaseElement=="true"){
 						E.onlyBaseElement=true;
-						this.$E[K[i]]=E;
+						this.$element[K[i]]=E;
 						C.restore();
 						continue;												
 					}
 					
 					if(E.rotate){
-						TempX=x,TempY=y;
-						x=-(E.rotateOriginX),y=-(E.rotateOriginY);
-						C.translate(TempX,TempY)
-
+						C.translate(x+E.rotateOriginX,y+E.rotateOriginY)
+						x=-E.rotateOriginX;y=-E.rotateOriginY;
 						C.rotate(E.rotate);
 					}
 					if(E.borderWidth>0){
 						C.strokeRect(x-E.borderWidth/2,y-E.borderWidth/2,width+E.borderWidth,height+E.borderWidth);
 					}
 					C.fillRect(x,y,width,height);
-					if(index!==-1){
+					
+					if(E.backgroundImageSrc && index!==-1){
 						if(pattern=="no-repeat"){
 							var tempsourcex=0,tempsourcey=0,tempsourcewidth=w,tempsourceheight=h,tempx=x+sourceX,tempy=y+sourceY;
 							if(sourceX<0){
@@ -622,29 +626,28 @@ made by
 							}		
 						}
 					}
-
-
 					break;
 				case "polygon":
 					if(applyNewProperty){
 						E.borderWidth=border.width;
 						E.borderColor=border.color;
 						E.border=border.width+" solid "+border.color;
-						if(E.vertex && typeof(E.vertex) =="object"){
+						event.vertex=[];
+						if(sys.lineJoinType.indexOf(E.lineJoin)===-1){
+							E.lineJoin=initElement.lineJoin;
+						}
+						C.lineJoin=E.lineJoin
+						if(E.vertex && typeof E.vertex=="object"){
 							var pass=0;
-							
-							if(!event.vertex){
-								event.vertex=[];
-							}
 							C.beginPath();
 							
-							if(typeof E.vertex[0][0] !="number" || typeof E.vertex[0][1] != "number"){
+							if(isNaN(Number(E.vertex[0][0])) || isNaN(Number(E.vertex[0][0]))){
 								pass=1;
 							}else{
 								event.vertex[0]=[0,0];
 
 								for(j=0; j<E.vertex.length; j++){
-									if(typeof E.vertex[j][0] !="number" || typeof E.vertex[j][1] != "number"){
+									if(isNaN(Number(E.vertex[j][0])) || isNaN(Number(E.vertex[j][1]))){
 										pass=1;
 										break;
 									}
@@ -664,7 +667,6 @@ made by
 								C.translate(E.x,E.y); //좌표이동
 								
 								//회전에 관해 보정및 출력
-								if(E.rotate){
 									//AREA를 구합니다
 									var area=0,temp,center=[0,0];
 									for(j=0; j<event.vertex.length; j++){
@@ -682,6 +684,8 @@ made by
 									
 									event.area=area;
 									event.center=center;
+
+								if(E.rotate){
 
 									E.rotate=numberFormat(E.rotate,$E && $E.rotate,initElement.rotate,false);
 									var cos=Math.cos(E.rotate);
@@ -721,12 +725,9 @@ made by
 								C.stroke();
 							}
 						}
-
 					}else{							
-						C.vertexJoin=E.vertexJoin;
-						C.lineWidth=E.borderWidth;
-						C.strokeStyle=E.borderColor;
 						C.beginPath();
+						C.lineJoin=E.lineJoin
 
 						for(j=0; j<(event.vertex && event.vertex.length) || 0; j++){
 							C.lineTo(event.vertex[j][0],event.vertex[j][1]);
@@ -744,16 +745,16 @@ made by
 						x=E.x;
 						y=E.y;
 
-						E.r=numberFormat(E.r,($E && $E.r),10);
+						E.r=numberFormat(E.r,($E && $E.r),initElement.r);
 
 						if(!E.start){
-							E.start=initElement.circle.start;
+							E.start=initElement.start;
 						}
 						if(!E.end){
-							E.end=initElement.circle.end;
+							E.end=initElement.end;
 						}
 						if(!E.clock){
-							E.clock=initElement.circle.clock;
+							E.clock=initElement.clock;
 						}
 
 						origin=typeof E.origin=="string" ? E.origin.split(" ") : initElement.origin;
@@ -792,7 +793,7 @@ made by
 					C.font=fontTemp;
 					C.fillStyle=E.color;
 					C.textAlign=E.textAlign;
-					C.textBasevertex=E.textBasevertex;
+					C.textBaseline=E.textBaseline;
 					C.fillText(str,E.x,E.y);
 					break;
 			}
@@ -825,9 +826,6 @@ made by
 			console.warn("CvSS ERROR : 캔버스가 등록 되지 않았습니다.");
 			return;
 		}
-		if(element == this){ //객체가 캔버스객체라면 윈도우 이벤트를 등록하겠금한다.
-			return this.$systemValue.windowEvent;
-		}
 		if(typeof element=="string" || typeof element=="number"){
 			this.$systemValue.STACK.push(String(element))
 		}
@@ -835,7 +833,7 @@ made by
 	}
 	//element(element).cvss
 	Canvas.prototype.cvss=function(info,/*optional*/val){
-		var target=this.$systemValue.STACK.pop();
+		var target=this.$systemValue.STACK.pop(),result;
 		if(!this.$element[target]){
 			console.warn("CvSS ERROR : 엘레먼트를 찾을 수 없습니다.");
 			return;
@@ -856,23 +854,25 @@ made by
 				obj[target]=Canvas.prototype.setBaseObj(this.$element[target],info,true);		
 				this.drawElement(obj);
 			}else{
-				if(this.$element[target] && this.$element[target][info]){
-					if(typeof this.$element[target][info]=="object"){
-						return Canvas.prototype.CopyObj(this.$element[target][info]);
+				if(this.$element[target]){
+					result=this.$element[target][info];
+					if(result===undefined && this.$initElement[info]){
+						result=this.$initElement[info];
 					}
-					return this.$element[target][info];
+					if(typeof result=="object"){
+						return Canvas.prototype.CopyObj(result);
+					}	
+					return result;
 				}
 			}
 		}
 	}
 	Canvas.prototype.getInfo=function(){
 		var target=this.$systemValue.STACK.pop();
-
 		if(!this.$element[target]){
-			console.error("CvSS ERROR : not found element");
+			console.warn("CvSS ERROR : not found element");
 			return 0;
 		}
-
 		return Canvas.prototype.CopyObj(this.$element[target]);
 	}
 	//element(element).create({info})
@@ -886,13 +886,45 @@ made by
 	Canvas.prototype.remove=function(){
 		var target=this.$systemValue.STACK.pop();
 		if(!this.$element[target]){
-			console.error("CvSS ERROR : not found element");	
+			console.warn("CvSS ERROR : not found element");	
 			return 0;
 		}
 
 		delete this.$element[target];
+		delete this.$elementKey.splice(this.$elementKey.indexOf(target),1);
+		delete this.$systemValue.EVENT[target];
 		delete this.$systemValue.eventFunc[target];
 		this.drawElement(this.$element);
+	}
+	Canvas.prototype.rename=function(nName){
+		var target=this.$systemValue.STACK.pop();
+		if(!this.$element[target]){
+			console.warn("CvSS ERROR : not found element");	
+			return 0;
+		}
+		if(this.$element[nName]){
+			console.warn("CvSS ERROR : "+nName+"은(는) 이미 존재하는 이름입니다.");
+			return 0;
+		}
+		this.$element[nName]=this.CopyObj(this.$element[target]);
+		delete this.$element[target]
+
+		var index=this.$elementKey.indexOf(target);
+		this.$elementKey.splice(index,1);
+		this.$elementKey.splice(index,0,nName);
+
+		this.$systemValue.EVENT[nName]=this.CopyObj(this.$systemValue.EVENT[target]);
+		delete this.$systemValue.EVENT[target];
+
+		var key=Object.keys(typeof this.$systemValue.eventFunc[target]=="Object" ? this.$systemValue.eventFunc[target] : {});
+		this.$systemValue.eventFunc[nName]={}
+		for(var i=0; i<key.length; i++){
+			this.$systemValue.eventFunc[nName]=this.$systemValue.eventFunc[target][key[i]]
+		}
+		delete this.$systemValue.eventFunc[target]
+
+		this.drawElement(this.$element);
+		return 1;
 	}
 
 
@@ -915,6 +947,7 @@ made by
 	Canvas.prototype.dragstart=function(func){this.submitEvent("dragstart",func);}
 	Canvas.prototype.drag=function(func){this.submitEvent("drag",func);}
 	Canvas.prototype.drop=function(func){this.submitEvent("drop",func);}
+	Canvas.prototype.mousemove=function(func){this.submitEvent("mousemove",func);}
 
 	//hover is mousein and mouseout event
 	Canvas.prototype.hover=function(Infunc,/*optional*/Outfunc){
@@ -956,26 +989,53 @@ made by
 		}
 	}
 	Canvas.prototype.unbind=function(events){
-		var target=this.$systemValue.STACK.pop();
+		var sys=this.$systemValue;
+		var target=sys.STACK.pop();
 	
 		if(typeof events!="string"){console.warn("Cvss Warning : unbind함수의 첫인자는 문자열입니다."); return 0;}
 		events=events.split(" ");
 		var i;
 		for(i=0; i<events.length; i++){
-			if(this.$systemValue.elementEventType.indexOf(events[i])==-1){continue;}
-			if(this.$systemValue.eventFunc[target]){
-				delete this.$systemValue.eventFunc[target][events[i]];
+			if(sys.elementEventType.indexOf(events[i])==-1){continue;}
+			if(sys.eventFunc[target]){
+				delete sys.eventFunc[target][events[i]];
 				return 1;
 			}
 		}
 		return 0;
 	}
+	Canvas.prototype.transform=function(type,value){
+		if(Object.prototype.toString.call( value ) !== '[object Array]' && isNaN(Number(value[0])) && isNaN(Number(value[1]))){
+			return
+		}
+		value[0]=Number(value[0])
+		value[1]=Number(value[1])
 
+		var matrix=[];
+		var sysTarget=this.$systemValue.transform;
+
+		switch(type){
+			case "scale":
+				sysTarget.scale=value;
+				break;
+			case "skew":
+				sysTarget.skew=value;
+				break;
+			case "translate":
+				sysTarget.translate=value;
+				break;
+		}
+		return 0;
+	}
+	Canvas.prototype.transformForMatrix=function(a,b,c,d,e,f){
+		if(typeof a=="number" && typeof b=="number" && typeof c=="number" && typeof d=="number" && typeof e=="number" && typeof f=="number"){
+			this.transform("scale",[a,d]);
+			this.transform("skew",[b,c]);
+			this.transform("translate",[e,f]);
+		}
+		return;
+	}
 	Canvas.prototype.$initElement={
-		scale:{
-			x:0,
-			y:0
-		},
 		zindex:0,
 		type:"block",
 		width:50,
@@ -985,18 +1045,14 @@ made by
 		background:"rgba(0,0,0,0)",
 		opacity:1,
 		origin:[0,0],
-		circle:{
-			x:0,
-			y:0,
-			r:10,
-			start:0,
-			end:2*Math.PI,
-			clock:true
-		},
-		backgroundImage:{
-			src:undefined,
-			pattern:"no-repeat",
-		},
+		r:10,
+		start:0,
+		end:2*Math.PI,
+		clock:true,
+		backgroundImageSrc:undefined,
+		backgroundImagePattern:"no-repeat",
+		backgroundImageX:0,
+		backgroundImageY:0,
 		cursor:"default",
 		fontSize:12,
 		fontFamily:"Arial",
@@ -1005,10 +1061,10 @@ made by
 		content:"",
 		figure:true,
 		rotate:0,
-		rotateOrigin:{
-			x:0,
-			y:0,
-			center:false
-		}
+		rotateOriginX:0,
+		rotateOriginX:0,
+		scale:[1,1],
+		translate:[0,0],
+		lineJoin:"round"
 	};
 }(window));//end

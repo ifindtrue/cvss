@@ -43,9 +43,9 @@
 		this.$systemValue.dammping=Math.pow(0.99,this.$systemValue.engineTime)
 
 		this.$canvas=canvas;
+			canvas.$systemValue.rotateCenter=true
 		this.$particle=new Object();
 			this.$particleStack=new Array();
-			this.$crashParticleObject=new Object(); // 충돌이벤트 시 실행할 함수 목록 idea tag기능의 경우 "tag:~"
 			this.$stopParticle={x:new Object(),y:new Object()} // 충돌의 경우
 			this.$checkContact=new Object();
 		this.$particleKey=new Array();
@@ -56,9 +56,12 @@
 		gravity:[0,0]
 	};
 	Engine.prototype.basicParticle={
+		m:1,
 		a:[0,0],
 		v:[0,0],
 		f:[0,0],
+		i:10,
+		t:0,
 		rA:0,
 		rV:0,
 		r:0,
@@ -72,6 +75,8 @@
 		a:"vector",
 		v:"vector",
 		s:"vector",
+		i:"number",//관성모멘트로 2d엔진으므로 관성텐서와 상관없이, 스칼라값을 가진다
+		t:"number",//토크
 		r:"number",//ROTATE
 		rV:"number",//ROTATE V
 		rA:"number",//ROTATE A
@@ -104,9 +109,6 @@
 					drawElement.y=this.$particle[particleKey[i]].s[1];
 
 					/*회전 업데이트*/
-					drawElement.rotateOriginX="50%";
-					drawElement.rotateOriginY="50%";
-
 					drawElement.rotate=this.$particle[particleKey[i]].r;
 				}
 			}
@@ -125,20 +127,22 @@
 		if(particle.inverseMass<=0){return;}	// 질량이 Infinity OR 0이하라면 retrun
 
 		particle.s=Vector.sum(particle.s,Vector.multiply(particle.v,duration)); //위치업데이트
-
-		particle.a=Vector.sum(particle.a,Vector.multiply(particle.f,particle.inverseMass));
+		particle.a=Vector.multiply(particle.f,particle.inverseMass);
 		var gravity=g ? this.$systemValue.gravity : [0,0];
-
 		particle.v=Vector.sum(particle.v,Vector.sum(Vector.multiply(particle.a,duration),gravity)); 
-		/*댐핑계수 추가*/
+		/*댐핑 추가*/
 		//particle.v=Vector.multiply(Vector.sum(particle.v,Vector.sum(Vector.multiply(particle.a,duration),gravity)),this.$systemValue.dammping); 
 		
+
+
+		/*각 운동*/
 		//(토크)=(강체의 중심으로부터 힘이작용되는점의 상대위치)X(벡터곱)F
 			//rA(각가속도)=(토크)/I(관성모멘트)
 			//rV(각속도)=rAt+rV0
 			//r(각도)=rAt^2/2+rV0t+r0 이지만 at^2/2이부분을 생략한 근사값을 적용한다.
-		particle.r+=particle.rV*duration;
-
+		particle.r+=particle.rV*duration; //각 업데이트
+		particle.rA=particle.inverseI*particle.t;
+		particle.rV+=particle.rA*duration;
 		particle.f=[0,0];
 		return 1;
 	}
@@ -148,19 +152,25 @@
 			console.warn("Gear World : 엘레먼트의 이름을 올바르게 입력해주세요");
 			return;
 		}
+		info=!info ? {} : info;
 		var newParticle=this.$particle[key] ? false : true;
 		var basicParticle=Engine.prototype.basicParticle;
 		/*particleStack은 명령어를 수행할 입자를 저장하는 역할을 한다*/
 		/*각 명령은 대부분 particleStack.pop() 을통해 대상이되는 입자를 pop한다.*/
 		switch(newParticle){
-			case true: //for문을 통하여 자동화 하여되지만, 편한관리를 위하여 나열식으로 작성한다.
+			case true: //for문을 통하여 자동화 하여되지만, 편한관리와 버그방지를 위하여 나열식으로 작성한다.
 				info.m=isNaN(info.m) ? basicParticle.m : Number(info.m);
+				info.inverseMass=1/info.m; //역 질량 a=f/inverseMass
+				
 				info.f=Vector.isVector(info.f) || [basicParticle.f[0],basicParticle.f[1]];
 				info.v=Vector.isVector(info.v) || [basicParticle.v[0],basicParticle.v[1]];
 				info.a=Vector.isVector(info.a) || [basicParticle.a[0],basicParticle.a[1]];
 				info.s=[this.$canvas.$element[key].x,this.$canvas.$element[key].y];
-				info.inverseMass=1/info.m; //역 질량 a=f/inverseMass
 				
+				info.i=isNaN(info.i) ? basicParticle.i : Number(info.i);
+				info.inverseI=1/info.i;//역 관성모멘트
+				
+				info.t=isNaN(info.t) ? basicParticle.t : Number(info.t);
 				info.rA=isNaN(info.rA) ? basicParticle.rA : Number(info.rA);
 				info.rV=isNaN(info.rV) ? basicParticle.rV : Number(info.rV);
 				info.r=this.$canvas.$element[key].rotate || basicParticle.r;
@@ -178,6 +188,8 @@
 		}
 
 	}
+	//particle.property('f',particle.proeprty('f')+nV); 을 통하여 힘발생기 같은 역할이 가능하다.
+	//property속성을 통해 입자의 속성이 변경될수 있는데, applyParticleProerty함수는  적분기 실행전에 property속성을 사용해 등록되어진 변경사항들을 일괄적으로 처리한다 
 	Engine.prototype.applyParticleProperty=function(){
 		var obj=this.$systemValue.standbyParticleProperty,
 			key=Object.keys(obj);
@@ -189,7 +201,11 @@
 				this.$particle[key[i]][subKey[j]]=obj[key[i]][subKey[j]];
 				delete obj[key[i]][subKey[j]]
 			}
+
 			this.$particle[key[i]].inverseMass=1/this.$particle[key[i]].m; //역질량 재설정
+			this.$particle[key[i]].inverseI=1/this.$particle[key[i]].i; //역관성모멘트 재설정
+			delete obj[key[i]]
+
 		}
 	}
 	//원래 정석적인 물리엔진은 속도를 변경하기위해서는 가속도를 변경시키지만,
@@ -256,27 +272,9 @@
 		return;
 	}
 
-	Engine.prototype.addForce=function(f){
-		if(this.$particleStack.length<1){return;}
-		var particle=this.$particle[this.$particleStack.pop()];
-		particle.f=Vector.sum(particle.f,Vector.isVector(f) || Engine.prototype.basicParticle.f); //(x)
-		return;
-	}
 	
-	Engine.prototype.crash=function(func){
-		if(this.$particleStack.length<1 || typeof func!="function"){return;}
-		var particle=this.$particleStack.pop();
-		this.$crashParticleObject[particle]=func;
-	}
-
 	/*충돌감지 및 충돌처리***********************************************************/
-	Engine.prototype.imagineIntergrator=function(particle,duration){
-		particle=this.$particle[particle];
-		if(particle.inverseMass<=0){ //질량이 무한 또는 음수라면 적분하지않는다.
-			return [particle.s[0],particle.s[1]];
-		}
-		return Vector.sum(particle.s,Vector.multiply(particle.v,duration));
-	}
+
 
 	Engine.prototype.collisionDetection=function(duration){
 		for(var i=0; i<this.$particleKey.length; i++){
@@ -298,19 +296,17 @@
 		//particleKey를 참조한다.
 		var KEY=this.$particleKey; 
 			// 이동거리 = 나중위치-현재위치
-		var deltaTv=Vector.sub(this.imagineIntergrator(t,duration),tProperty.s),
 			//드로잉 라이브러리의 시스템변수에 접근하여 파티클의 실질 정점들을 불러온다
-			tV=this.$canvas.$systemValue.eventPointer[t].vertex; 
+			tV=this.$canvas.$systemValue.EVENT[t].vertex; 
 
-		var deltaOv=Vector.sub(this.imagineIntergrator(o,duration),oProperty.s),
-			oV=this.$canvas.$systemValue.eventPointer[o].vertex;
+			oV=this.$canvas.$systemValue.EVENT[o].vertex;
 
 		if(tV.length<3 || oV.length<3){return;}
 		
 		//민코스키의 차집합 : tV-oV
 		var initialVal={
-			o:Vector.sum(oV[0],deltaOv),
-			t:Vector.sum(tV[0],deltaTv)
+			o:oV[0],
+			t:tV[0]
 		}
 		var simplexVertex=new Array();
 			simplexVertex=[Vector.sub(initialVal.o,initialVal.t)] // o-t
@@ -342,10 +338,10 @@
 				break;
 			}
 
-			var indexT=GJK.support(tV,Vector.negate(d),deltaTv),
-				pointT=Vector.sum(tV[indexT],deltaTv),
-				indexO=GJK.support(oV,d,deltaOv),
-				pointO=Vector.sum(oV[indexO],deltaOv);
+			var indexT=GJK.support(tV,Vector.negate(d)),
+				pointT=tV[indexT],
+				indexO=GJK.support(oV,d),
+				pointO=oV[indexO];
 			
 
 
@@ -387,12 +383,13 @@
 		var collisionData=new Object();
 		for(var i=0; i<MAX_iteration; i++){ // 몇몇 무한루프 때문에 MAX_intertation 제약을 주었다
 			var edge=this.EPA.findClosestEdge(simplexVertex);
-			var point=Vector.sub(Vector.sum(oV[GJK.support(oV,edge.normal,deltaOv)],deltaOv),Vector.sum(tV[GJK.support(tV,Vector.negate(edge.normal),deltaTv)],deltaTv));
+			var point=Vector.sub(oV[GJK.support(oV,edge.normal)],tV[GJK.support(tV,Vector.negate(edge.normal))]);
 			
 			var d=Vector.dotProduct(point,edge.normal);
 			if(d-edge.distance<1){
 				collisionData.normal=edge.normal;
 				collisionData.deph=d;
+				collisionData.point=result.point1
 				break
 			}else{
 				simplexVertex.splice(edge.index,0,point);
@@ -430,11 +427,11 @@
 					return [0,0];
 			}
 		},
-		support:function(C,d,delta){ //supprot가 기존의 정점이면 알고리즘 종료
+		support:function(C,d){ //supprot가 기존의 정점이면 알고리즘 종료
 			var max=-Infinity,
 				index=0;
 			for(var i=0; i<C.length; i++){
-				var value=Vector.dotProduct(Vector.sum(C[i],delta),d);
+				var value=Vector.dotProduct(C[i],d);
 				if(max<value){
 					max=value;
 					index=i;
@@ -651,16 +648,24 @@
 Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //충돌 처리
 		var A=this.$particle[particle[0]];
 		var B=this.$particle[particle[1]];
+		
 		this.$checkContact[particle[0]]=true;
 		this.$checkContact[particle[1]]=true;
-
+		
 		var isBackgroundA=A.inverseMass<=0;
 		var isBackgroundB=B.inverseMass<=0;
 		if(isBackgroundA){A.a=[0,0];	A.v=[0,0];}
 		if(isBackgroundB){B.a=[0,0];	B.v=[0,0];}
+		
 		var isStopA={x:this.$stopParticle.x[particle[0]],y:this.$stopParticle.y[particle[0]]};
 		var isStopB={x:this.$stopParticle.x[particle[1]],y:this.$stopParticle.y[particle[1]]};
+		
 		var separatingV=Vector.dotProduct(Vector.sub(A.v,B.v),contactData.normal);
+
+		//충돌데이터와 물체의 질량에 근거하여 위치를 조정한다.
+		//(충돌깊이)=(A위치의 변화량)+(B위치의 변화량)
+		A.s=Vector.sum(A.s,Vector.multiply(contactData.normal,A.m/(A.m+B.m)*contactData.deph));
+		B.s=Vector.sum(B.s,Vector.multiply(Vector.negate(contactData.normal),B.m/(A.m+B.m)*contactData.deph));
 
 		if(separatingV>0){
 			return;
@@ -670,17 +675,25 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 		var deltaV=newSepV-separatingV;
 
 		var totalInverseMass=A.inverseMass+B.inverseMass;
+		//속도의 변화는 속도변화의 총량에 두물체의 질량에 따라 그값이 결정되는데, 역질량을 통하여도 그비율을 알수있다. 장점은 연산속도가 좋아진다
 		if(totalInverseMass<=0){ // 둘다 배경이라면
 			return;
 		}
 
-		var impulse=deltaV/totalInverseMass; // Ma+Mb/MaMb * 속도 변화량
+		var impulse=deltaV/totalInverseMass; // 속도 변화량/AinverseMass+BinverseMass -> 총속도변화량을 질량에 따라 그 비율을 나누기우힌과정이다.
+		//거리변화처럼 (여기선 질량을 역질량으로 생각)
+		//(A 속도변화)=A.m/(A.m+B.m)*deltaV
+		//(B 속도변화)=B.m/(A.m+B.m)*deltaV 
+
 		//운동량은 보존된다.
 		impulsePerlMass=Vector.multiply(contactData.normal,impulse);
 		
-		var aA=Vector.sum(A.v,Vector.multiply(impulsePerlMass,A.inverseMass));
-		var aB=Vector.sum(B.v,Vector.multiply(impulsePerlMass,-B.inverseMass));
+		var deltaVelocityA=Vector.multiply(impulsePerlMass,A.inverseMass);
+		var aA=Vector.sum(A.v,deltaVelocityA);
+		var deltaVelocityB=Vector.multiply(impulsePerlMass,-B.inverseMass);
+		var aB=Vector.sum(B.v,deltaVelocityB);
 
+		//충돌량은 속도의 변화에 직접적인 영향을끼친다.
 		if((!isStopA.y && !isBackgroundA) && (isStopB.y || isBackgroundB)){
 			A.v[1]=A.m>=B.m ? 0 : aA[1];
 			B.v[1]=0;
@@ -698,6 +711,11 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 		A.v[0]=aA[0];
 		B.v[0]=aB[0];
 
+
+		//(각도변화)=I^-1*u(충격토크)
+		//(충격토크)=Qrel(외적)충격량
+		//A.rV=Vector.cross(Vector.sub(contactData.point,this.$canvas.$systemValue.EVENT[particle[0]].center),Vector.multiply(deltaVelocityA,A.inverseMass))/A.i;
+		//B.rV=Vector.cross(Vector.sub(contactData.point,this.$canvas.$systemValue.EVENT[particle[1]].center),Vector.multiply(deltaVelocityB,B.inverseMass))/B.i;
 		this.detectStopParticle(particle[0]);
 		this.detectStopParticle(particle[1]);	
 		//앞부분에다가 작성하면
@@ -762,7 +780,7 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 		distance:function(a,b){
 			return Vector.length(Vector.sub(a,b))
 		},
-		cross:function(a,b){
+		cross:function(a,b){//2d 에서의 외적
 			var A=Vector.isVector(a),B=Vector.isVector(b);
 			if(A && B){
 				return a[0]*b[1]-a[1]*b[0]
