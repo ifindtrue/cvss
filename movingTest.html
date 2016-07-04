@@ -4,57 +4,107 @@
 		<title>엔진 테스트</title>
 		<meta charset="utf8">
 		<script src="./js/cvss.0.2.js"></script>
-		<script src="./js/prevEngine.js"></script>
+		<script src="./js/engine.js"></script>
 	</head>
 	<body>
-		<canvas width=1000 height=500 id="canvas"></canvas>
+		<canvas width=300 height=100 id="canvas"></canvas>
 		<script>
 			var canvas=new Canvas("#canvas");
 
-			canvas.element("particle5").create({type:"polygon",x:100,y:00,border:"1px solid blue",vertex:[[-100,100],[0,100]],zindex:10});
-
-			
-			canvas.element("background").create({type:"block",width:"100%",background:"#aaa",y:"100%",origin:"0 100%",zindex:0,rotate:0});
-			canvas.element("particle2").create({type:"polygon",x:90,y:00,border:"1px solid red",vertex:[[100,20],[300,300],[200,300]],zindex:10});
-			canvas.element("particle").create({type:"block",x:0,y:-100,background:"red",rotate:0,height:100,zindex:100});
-			canvas.element("particle3").create({type:"polygon",x:100,y:00,border:"1px solid red",vertex:[[100,20],[300,300],[200,300]],zindex:10});
-
-			var engine=new Engine(canvas,{fps:64,gravity:[0,10]});
-
-	
-			engine.particle("particle5",{ //blackHigh
-				m:1,v:[0,0]
+			canvas.element("B").create({
+				type:"block",
+				x:0,y:0,zindex:-1,
+				width:"100%",height:"100%",
+				background:"#efefef"
 			});
-			engine.particle("background",{
-				m:Infinity,v:[0,0]
-			});
+			canvas.element("B1").create({type:"block",y:"100%",width:"100%",height:10,origin:"0 100%",background:"#aaa",zindex:0});
+			canvas.element("B2").create({type:"block",x:"100%",y:"100%",width:20,height:30,origin:"100% 100%",background:"#5d5d5d",zindex:0});
+			canvas.element("B3").create({type:"block",y:"50%",width:"50%",height:10,origin:"0 100%",background:"#aaa",zindex:0});
 
-			engine.particle("particle",{ //blackHigh
-				m:1,v:[00,0]
+			canvas.element("player").create({
+				type:"block",zindex:1000,
+				width:10,height:10,
+				x:0,y:0,
+				background:"orange"
 			});
+			canvas.element("attack_obj").create({
+				type:"polygon",vertex:[[20,10],[0,20],[10,10]],background:"#58ACFA",zindex:10000,
+				borderColor:"rgba(0,0,0,0)",x:-100
+			});
+			canvas.element("monster").create({
+				background:"#eee",x:20,y:-100,border:"1px solid red",
+				backgroundImageSrc:"http://www.feplanet.net/media/sprites/8/battle/sheets/enemy/monster_gorgon_magic.gif"
+			})
 
-			engine.particle("particle2",{ //blackHigh
-				m:1,v:[00,0]
-			});
+
+			var engine=new Engine(canvas,{fps:64,gravity:[0,5]});
+			engine.particle("B1",{m:Infinity});
+			engine.particle("B3",{m:Infinity});
+
+			engine.particle("player",{});
+			engine.particle("attack_obj",{applyGravity:false,contactHandling:false});
+			engine.particle("monster",{});
+
+			var isKeydown=new Array();
+			var pressCount={
+				38:0,
+				37:0,
+				39:0
+			};
+
 			document.addEventListener("keydown",function(event){
-				switch(event.keyCode){
-					case 38:
-						v=[0,-100]
-						break;
-					case 37:
-						v=[-100,0]
-						break;
-					case 40:
-						v=[0,100]
-						break;
-					case 39:
-						v=[100,0]
-						break;
+				if(isKeydown[event.keyCode]===true){
+					return
 				}
-				if(typeof v=="object"){engine.particle("particle").property('v',v);}
-				delete v
+				isKeydown[event.keyCode]=true;
+
+				var speed=10;
+				var v=engine.particle("player").property('v');
+				if(Math.abs(v[0])>=speed){
+					v[0]=0;
+				}
+				if(Math.abs(v[1])>=speed){
+					v[1]=0;
+				}
+				if(isKeydown[38] &&  pressCount[38]<=1){
+					v[1]=-speed;
+					pressCount[38]++;
+				}
+				if(isKeydown[37]){
+					v[0]=-speed
+					pressCount[37]++;
+				}
+				if(isKeydown[39]){
+					pressCount[39]++;
+					v[0]=speed 
+				}
+				if(isKeydown[40]){
+					v=[0,0]
+				}
+				if(isKeydown[32]){
+					var x=canvas.element("player").cvss("x");
+					var y=canvas.element("player").cvss("y");
+
+					engine.particle("attack_obj").property('s',[x,y-5]);
+					engine.particle("attack_obj").property('v',[100,0]);
+				}
+				engine.particle("player").property('v',v);
 			});
-		
+			document.addEventListener("keyup",function(event){
+				isKeydown[event.keyCode]=false;
+			});
+			engine.particle("player").collision(function(target){
+				pressCount={
+					38:0,
+					37:0,
+					39:0
+				};
+			});
+			engine.particle("monster").collision(function(target){
+				if(target=="attack_obj"){
+					engine.particle("monster").property("f",[10,0])
+				}
+			})			
 		</script>
 	</body>
 </html>
