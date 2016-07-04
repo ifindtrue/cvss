@@ -56,11 +56,11 @@
 		gravity:[0,0]
 	};
 	Engine.prototype.basicParticle={
-		m:1,
+		m:10,
 		a:[0,0],
 		v:[0,0],
 		f:[0,0],
-		i:10000,
+		i:10,
 		t:0,
 		rA:0,
 		rV:0,
@@ -89,7 +89,7 @@
 	// 1000ms/fps 1000ms 1초를 fps로 나눔
 	Engine.prototype.$gearSystem=function(){
 		var th=this;
-		window.requestAniFrame(function(){th.$gearSystem();});
+		this.loop=window.requestAniFrame(function(){th.$gearSystem();});
 
 		var sysInfo=this.$systemValue;
 			sysInfo.now=Date.now();
@@ -156,7 +156,9 @@
 
 		return 1;
 	}
-
+	Engine.prototype.stop=function(){
+		cancelAnimationFrame(this.loop);
+	}
 	Engine.prototype.particle=function(key,info){
 		if(!this.$canvas.$element[key]){
 			console.warn("Gear World : 엘레먼트의 이름을 올바르게 입력해주세요");
