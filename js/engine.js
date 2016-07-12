@@ -98,12 +98,14 @@
 		if(sysInfo.delta>sysInfo.engineTime){
 			var particleKey=this.$particleKey;
 
-			//대기열에 있는 입자의 변경된속성들을 일괄적용
-			this.applyParticleProperty();
+			this.applyParticleProperty(); //대기열에 있는 입자의 변경된속성들을 일괄적용
 			
 			for(i=0; i<particleKey.length; i++){
+				this.collisionDetection(sysInfo.engineTime); // 충돌검출 및 처리
+			}
+				
+			for(i=0; i<particleKey.length; i++){
 				var drawElement=this.$canvas.$element[particleKey[i]];
-				this.collisionDetection(sysInfo.engineTime); // 충돌 판정
 				/*적분기*/
 				if(this.integrator(this.$particle[particleKey[i]],sysInfo.engineTime,this.$particle[particleKey[i]].applyGravity)){
 					/*위치 업데이트*/
@@ -115,8 +117,7 @@
 					//drawElement.rotate=Math.acos(this.$particle[particleKey[i]].r[0]); //적용
 				}
 			}
-			for(i=0; i<particleKey.length; i++){
-			}
+
 		}
 		if(sysInfo.delta>sysInfo.interval){
 			this.$canvas.drawElement(this.$canvas.$element);
@@ -129,7 +130,9 @@
 			//a(가속도)=f/m
 			//v(속도)=at+v0
 			//s(위치)=at^2/2+v0t+s0 이지만 at^2/2이부분을 생략한 근사값을 적용한다.
-		if(particle.inverseMass<=0){return;}	// 질량이 Infinity OR 0이하라면 retrun
+		if(particle.inverseMass<=0){ // 질량이 Infinity OR 0이하라면 retrun
+			return;
+		}	
 
 		particle.s=Vector.sum(particle.s,Vector.multiply(particle.v,duration)); //위치업데이트
 		particle.a=Vector.multiply(particle.f,particle.inverseMass);
@@ -170,6 +173,7 @@
 		/*각 명령은 대부분 particleStack.pop() 을통해 대상이되는 입자를 pop한다.*/
 		switch(newParticle){
 			case true: //for문을 통하여 자동화 하여되지만, 편한관리와 버그방지를 위하여 나열식으로 작성한다.
+				//나눗셈이 곱셈보다 몇십배 느리기 때문에 역질량을 설정해 곱셈을 사용한다
 				info.m=isNaN(Number(info.m)) ? basicParticle.m : Number(info.m);
 				info.inverseMass=1/info.m; //역 질량 a=f/inverseMass
 				
@@ -305,7 +309,6 @@
 
 	Engine.prototype.collisionDetection=function(duration){
 		for(var i=0; i<this.$particleKey.length; i++){
-
 			for(var j=i+1; j<this.$particleKey.length; j++){
 				this.REALcollisionDetection(this.$particleKey[i],this.$particleKey[j],duration)
 			}
@@ -313,6 +316,14 @@
 		return
 	}
 	Engine.prototype.REALcollisionDetection=function(t,o,duration){
+		//정밀충돌감지를 들어가기전에 바운딩박스충돌을 검사한다.
+		var	A=this.$canvas.$systemValue.boundingBox[t];
+		var	B=this.$canvas.$systemValue.boundingBox[o];
+
+		if(A.top>B.bottom || A.right<B.left || A.bottom<B.top || A.left>B.right){
+			return;
+		}
+		//정밀충돌감지
 		var GJK=this.GJK,
 			MAX_iteration=10;
 		
@@ -327,8 +338,9 @@
 
 			oV=this.$canvas.$systemValue.EVENT[o].vertex;
 
-		if(tV.length<3 || oV.length<3){return;}
-		
+		if(tV.length<3 || oV.length<3){
+			return;
+		}
 		//민코스키의 차집합 : tV-oV
 		var initialVal={
 			o:oV[0],
@@ -368,8 +380,6 @@
 				pointT=tV[indexT],
 				indexO=GJK.support(oV,d),
 				pointO=oV[indexO];
-			
-
 
 			//중복 체크
 			var duplicate=false;
@@ -432,7 +442,7 @@
 
 
 
-Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //충돌 처리
+		Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //충돌 처리
 		var A=this.$particle[particle[0]];
 		var B=this.$particle[particle[1]];
 	
@@ -451,25 +461,23 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 		
 		var isBackgroundA=A.inverseMass<=0;
 		var isBackgroundB=B.inverseMass<=0;
-		if(isBackgroundA){A.a=[0,0];	A.v=[0,0];}
-		if(isBackgroundB){B.a=[0,0];	B.v=[0,0];}
+		if(isBackgroundA){A.a=[0,0]; A.v=[0,0];}
+		if(isBackgroundB){B.a=[0,0]; B.v=[0,0];}
 		
 		
-		var separatingV=Vector.dotProduct(Vector.sub(A.v,B.v),contactData.normal);
+		var totalInverseMass=A.inverseMass+B.inverseMass;
 
 		//충돌데이터와 물체의 질량에 근거하여 위치를 조정한다.
 		//(충돌깊이)=(A위치의 변화량)+(B위치의 변화량)
-		if(contactData.deph>10){
-			if(!isBackgroundA && isBackgroundB){
-				A.s=Vector.sum(A.s,Vector.multiply(contactData.normal,contactData.deph));
-			}else if(isBackgroundA && !isBackgroundB){
-				B.s=Vector.sum(B.s,Vector.multiply(Vector.negate(contactData.normal),contactData.deph));
-			}else{
-				A.s=Vector.sum(A.s,Vector.multiply(contactData.normal,A.m/(A.m+B.m)*contactData.deph));
-				B.s=Vector.sum(B.s,Vector.multiply(Vector.negate(contactData.normal),B.m/(A.m+B.m)*contactData.deph));
-			}		
+		/*
+		if(contactData.deph>0 && totalInverseMass>0){
+			//역질량을 기준으로하면 여러에러와 연산속도가 빨라진다.
+			var totalMove=Vector.multiply(contactData.normal,(contactData.deph/totalInverseMass));
+			A.s=Vector.sum(A.s,Vector.multiply(totalMove,A.inverseMass));
+			B.s=Vector.sum(B.s,Vector.negate(Vector.multiply(totalMove,B.inverseMass)));
 		}
-
+		*/
+		var separatingV=Vector.dotProduct(Vector.sub(A.v,B.v),contactData.normal);	
 		if(separatingV>0){
 			return;
 		}
@@ -477,7 +485,6 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 		var newSepV=-separatingV*e;
 		var deltaV=newSepV-separatingV;
 
-		var totalInverseMass=A.inverseMass+B.inverseMass;
 		//속도의 변화는 속도변화의 총량에 두물체의 질량에 따라 그값이 결정되는데, 역질량을 통하여도 그비율을 알수있다. 장점은 연산속도가 좋아진다
 		if(totalInverseMass<=0){ // 둘다 배경이라면
 			return;
@@ -744,7 +751,12 @@ Engine.prototype.collisionProcessing=function(particle,duration,contactData){ //
 			return result;
 		}
 	}
-
+	Engine.prototype.boundingBox={
+		new:function(position){
+		},
+		overwrap:function(){
+		}
+	}
 	/*벡터 합수 접근성의 용이함을 위해 window.Vector로 선언한다.*/
 	window.Vector={
 		isVector:function(val){

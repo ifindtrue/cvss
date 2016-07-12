@@ -69,7 +69,8 @@ made by
 				lineJoinType:["bevel","round","miter"],
 				transform:{
 					scale:[1,1]
-				}
+				},
+				boundingBox:{}
 			}
 		}else{
 			console.warn("CvSS ERROR : "+name+" 캔버스를 찾을 수 없습니다.");
@@ -352,8 +353,9 @@ made by
 				this.$elementKey.splice(index,1);
 			}
 
-			var f=0,l=this.$elementKey.length;
+			var f=0,l=this.$elementKey.length,MAXcount=l,count=0;
 			while( f < l ){
+				if(count>MAXcount){break}
 				var mid=parseInt((f+l)/2);
 				if((info[this.$elementKey[mid]].zindex || 0)==(info[value].zindex || 0)){
 					this.$elementKey.splice(mid,0,value);
@@ -365,14 +367,19 @@ made by
 				}else{
 					f=mid+1;
 				}
+				count++;
 			}
 			if(apply){
 				continue;
 			}
 			//f>1이라는건 f가 다가온것, 즉 mid가 작다는것, zindex정렬은 값이 클수록 오른쪽으로(index가 큰순으로) 정령되어야하므로 f>l 이면 f,아닐경우에는 l로
-			this.$elementKey.splice(f>l ? f : l,0,value);
+			var pass=mid,length=this.$elementKey.length;
+			while(pass<length && (info[this.$elementKey[pass]].zindex || 0 )<(info[value].zindex || 0)){
+				pass++;
+			} 
+			this.$elementKey.splice(pass,0,value);
 		}
-		K=this.$elementKey; //$elementKey에 정렬된 key순서를 적용한다, 다른 함수(이벤트함수)에서도 엘레먼트의 출력순서는 꼭 필요하다
+		var K=this.$elementKey; //$elementKey에 정렬된 key순서를 적용한다, 다른 함수(이벤트함수)에서도 엘레먼트의 출력순서는 꼭 필요하다
 
 		var patterns=sys.backgroundRepeatType; //block속성 중 background기능에서 repeat의 허용범위를 지정해준 배열을 불러온다.
 		C.scale(sys.transform.scale[0],sys.transform.scale[1]); // 화면
@@ -417,9 +424,6 @@ made by
 			
 			//공통 속성
 			if(applyNewProperty){
-				E.x=numberFormat(persentFormat(this.$canvas.width,E.x,initElement.x),($E && $E.x),initElement.x);
-				E.y=numberFormat(persentFormat(this.$canvas.height,E.y,initElement.y),($E && $E.y),initElement.y);		
-
 				if((!$E && typeof E.border=="string")|| typeof E.border=="string" && ($E && $E.border!=E.border)){
 					borderArr=E.border.split(" ");
 					border.width=numberFormat(borderArr[0],0,initElement.borderWidth);
@@ -440,41 +444,37 @@ made by
 				E.borderColor=border.color;
 				E.border=border.width+" solid "+border.color;
 			}
-
+			x=numberFormat(persentFormat(this.$canvas.width,E.x,initElement.x),($E && $E.x),initElement.x);
+			y=numberFormat(persentFormat(this.$canvas.height,E.y,initElement.y),($E && $E.y),initElement.y);	
 			switch(E.type){
 				case "block":
-					if(applyNewProperty){
-						E.width=numberFormat(persentFormat(this.$canvas.width,E.width,initElement.width),($E && $E.width) || 0,initElement.width);
-						E.height=numberFormat(persentFormat(this.$canvas.height,E.height,initElement.height),($E && $E.height) || 0,initElement.height);
+					width=numberFormat(persentFormat(this.$canvas.width,E.width,initElement.width),($E && $E.width) || 0,initElement.width);
+					height=numberFormat(persentFormat(this.$canvas.height,E.height,initElement.height),($E && $E.height) || 0,initElement.height);
+				
+					if(E.minWidth){
+						E.minWidth=numberFormat(persentFormat(this.$canvas.width,E.minWidth,0),($E && $E.minWidth) || 0,0);
+						width=E.minWidth<E.width ? E.width : E.minWidth;
+					}
+					if(E.maxWidth){
+						E.maxWidth=numberFormat(persentFormat(this.$canvas.width,E.maxWidth,width),($E && $E.maxWidth) || 0,width);
+						width=E.maxWidth<width ? E.maxWidth : width;
+					}
 					
-						width=E.width;
-						if(E.minWidth){
-							E.minWidth=numberFormat(persentFormat(this.$canvas.width,E.minWidth,0),($E && $E.minWidth) || 0,0);
-							width=E.minWidth<E.width ? E.width : E.minWidth;
-						}
-						if(E.maxWidth){
-							E.maxWidth=numberFormat(persentFormat(this.$canvas.width,E.maxWidth,width),($E && $E.maxWidth) || 0,width);
-							width=E.maxWidth<width ? E.maxWidth : width;
-						}
-						
-						height=E.height;
-						if(E.minHeight){
-							E.minHeight=numberFormat(persentFormat(this.$canvas.height,E.minHeight,0),($E && $E.minHeight) || 0,0);
-							height=E.minHeight<E.height ? E.height :E.minHeight;
-						}
-						if(E.maxHeight){
-							E.maxHeight=numberFormat(persentFormat(this.$canvas.height,E.maxHeight,height),($E && $E.maxHeight) || 0,height);
-							height=E.maxHeight<height ? E.maxHeight: height;
-						}
+					if(E.minHeight){
+						E.minHeight=numberFormat(persentFormat(this.$canvas.height,E.minHeight,0),($E && $E.minHeight) || 0,0);
+						height=E.minHeight<E.height ? E.height :E.minHeight;
+					}
+					if(E.maxHeight){
+						E.maxHeight=numberFormat(persentFormat(this.$canvas.height,E.maxHeight,height),($E && $E.maxHeight) || 0,height);
+						height=E.maxHeight<height ? E.maxHeight: height;
+					}
+					C.fillStyle=E.background ? E.background: initElement.background;
+					
+					origin=typeof E.origin=="string" ? E.origin.split(" ") : initElement.origin;
+						x-=numberFormat(persentFormat(width,origin[0],initElement.origin[0]),0,initElement.origin[0]);
+						y-=numberFormat(persentFormat(height,origin[1],initElement.origin[1]),0,initElement.origin[0]);
 
-						x=E.x;
-						y=E.y;
-						origin=typeof E.origin=="string" ? E.origin.split(" ") : initElement.origin;
-						x-=persentFormat(E.width,origin[0],initElement.origin[0]);
-						y-=persentFormat(E.height,origin[1],initElement.origin[1]);
-
-						C.fillStyle=E.background ? E.background: initElement.background;
-						
+					if(applyNewProperty){
 						if(E.backgroundImageSrc){
 							E.backgroundImagePattern=patterns.indexOf(E.backgroundImagePattern)!=-1 ? E.backgroundImagePattern : initElement.backgroundImagePattern;
 							E.backgroundImageX=numberFormat(E.backgroundImageX,($E && $E.backgroundImageX)||0,initElement.backgroundImageX);
@@ -486,8 +486,8 @@ made by
 							sourceY=E.backgroundImageY;				
 						}
 
-						event.area=E.width*E.height;
-						event.center=[x+E.width/2,y+E.height/2];
+						event.area=width*height;
+						event.center=[x+width/2,y+height/2];
 						if(E.rotate){ //transform
 							E.rotate=numberFormat(E.rotate,$E && $E.rotate,initElement.rotate,false);
 							if(sys.rotateCenter===true){
@@ -502,28 +502,10 @@ made by
 
 							//x+rotateOriginX
 							event.vertex=[[-E.rotateOriginX*cos+E.rotateOriginY*sin+x+E.rotateOriginX,-E.rotateOriginX*sin-E.rotateOriginY*cos+y+E.rotateOriginY],[(width-E.rotateOriginX)*cos+E.rotateOriginY*sin+x+E.rotateOriginX,(width-E.rotateOriginX)*sin-E.rotateOriginY*cos+y+E.rotateOriginY],[(width-E.rotateOriginX)*cos-(height-E.rotateOriginY)*sin+x+E.rotateOriginX,(width-E.rotateOriginX)*sin+(height-E.rotateOriginY)*cos+y+E.rotateOriginY],[-E.rotateOriginX*cos-(height-E.rotateOriginY)*sin+x+E.rotateOriginX,-E.rotateOriginX*sin+(height-E.rotateOriginY)*cos+y+E.rotateOriginY]];	
-							t=event.vertex;
 						}else{
 							event.vertex=[[x,y],[x+width,y],[x+width,y+height],[x,y+height]];	
-							t=event.vertex;
 						}
-						E.$x=x;
-						E.$y=y;
-
 					}else{
-						x=E.$x;
-						y=E.$y;
-						width=E.width;
-						height=E.height;
-						if(E.minWidth){
-							E.minWidth=numberFormat(persentFormat(this.$canvas.width,E.minWidth,0),($E && $E.minWidth) || 0,0);
-							width=E.minWidth<E.width ? E.width : E.minWidth;
-						}
-						if(E.maxWidth){
-							E.maxWidth=numberFormat(persentFormat(this.$canvas.width,E.maxWidth,width),($E && $E.maxWidth) || 0,width);
-							width=E.maxWidth<width ? E.maxWidth : width;
-						}
-						C.fillStyle=E.background ? E.background: initElement.background;
 						if(E.backgroundImageSrc){
 							sourceX=E.backgroundImageX;
 							sourceY=E.backgroundImageY;
@@ -531,7 +513,8 @@ made by
 							src=E.backgroundImageSrc;
 						}
 					}
-								
+					E.$x=x;
+					E.$y=y;								
 					if(E.backgroundImageSrc){
 						var index=sys.imageSrc.indexOf(src);
 						if(index == -1){
@@ -664,7 +647,7 @@ made by
 								}
 							
 
-								C.translate(E.x,E.y); //좌표이동
+								C.translate(x,y); //좌표이동
 								
 								//회전에 관해 보정및 출력
 									//AREA를 구합니다
@@ -695,23 +678,23 @@ made by
 									event.vertex[0][1]=-center[0]*sin-center[1]*cos+center[1];
 
 									C.moveTo(event.vertex[0][0],event.vertex[0][1])
-									event.vertex[0][0]+=E.x;
-									event.vertex[0][1]+=E.y;
+									event.vertex[0][0]+=x;
+									event.vertex[0][1]+=y;
 									for(j=0; j<event.vertex.length-1; j++){
 										event.vertex[j+1][0]=(E.vertex[j][0]-center[0])*cos-(E.vertex[j][1]-center[1])*sin+center[0];
 										event.vertex[j+1][1]=(E.vertex[j][0]-center[0])*sin+(E.vertex[j][1]-center[1])*cos+center[1];
 										C.lineTo(event.vertex[j+1][0],event.vertex[j+1][1])
-										event.vertex[j+1][0]+=E.x;
-										event.vertex[j+1][1]+=E.y;
+										event.vertex[j+1][0]+=x;
+										event.vertex[j+1][1]+=y;
 									}
 								}else{
 									C.moveTo(0,0);
-										event.vertex[0][0]=E.x;
-										event.vertex[0][1]=E.y;
+										event.vertex[0][0]=x;
+										event.vertex[0][1]=y;
 
 									for(j=0; j<event.vertex.length-1; j++){
-										event.vertex[j+1][0]+=E.x;
-										event.vertex[j+1][1]+=E.y;
+										event.vertex[j+1][0]+=x;
+										event.vertex[j+1][1]+=y;
 										C.lineTo(E.vertex[j][0],E.vertex[j][1]);
 									}
 								}
@@ -724,6 +707,8 @@ made by
 								}
 								C.stroke();
 							}
+							E.x=x;
+							E.y=y;
 						}
 					}else{							
 						C.beginPath();
@@ -742,8 +727,8 @@ made by
 					break;
 				case "circle":
 					if(applyNewProperty){
-						x=E.x;
-						y=E.y;
+						x=x;
+						y=y;
 
 						E.r=numberFormat(E.r,($E && $E.r),initElement.r);
 
@@ -794,18 +779,12 @@ made by
 					C.fillStyle=E.color;
 					C.textAlign=E.textAlign;
 					C.textBaseline=E.textBaseline;
-					C.fillText(str,E.x,E.y);
+					C.fillText(str,x,y);
 					break;
 			}
 			if(applyNewProperty){
-				//무게중심을 구합니다
-				switch(E.type){
-					case "block":
-					case "polygon":
-
-				}	
-			}
-			
+				this.computeBoundingBox(K[i],E.type);
+			}			
 			delete E.$temp;
 
 			this.$element[K[i]]=E;
@@ -1027,6 +1006,34 @@ made by
 		}
 		return 0;
 	}
+	Canvas.prototype.computeBoundingBox=function(name,type){
+		if(type=="circle" || type=="text"){return}
+		var vertex=this.$systemValue.EVENT[name].vertex;
+		var minX=Infinity
+		var minY=Infinity			
+		var maxX=-Infinity	
+		var maxY=-Infinity
+
+		for(var i=0; i<vertex.length; i++){
+			if(vertex[i][0]<minX){
+				minX=vertex[i][0];
+			}
+			if(vertex[i][1]<minY){
+				minY=vertex[i][1];
+			}		
+			if(vertex[i][0]>maxX){
+				maxX=vertex[i][0];
+			}
+			if(vertex[i][1]>maxY){
+				maxY=vertex[i][1];
+			}										
+		}
+		this.$systemValue.boundingBox[name]={
+			left:minX,right:maxX,
+			top:minY,bottom:maxY
+		};
+		return
+	}	
 	Canvas.prototype.transformForMatrix=function(a,b,c,d,e,f){
 		if(typeof a=="number" && typeof b=="number" && typeof c=="number" && typeof d=="number" && typeof e=="number" && typeof f=="number"){
 			this.transform("scale",[a,d]);
@@ -1062,9 +1069,11 @@ made by
 		figure:true,
 		rotate:0,
 		rotateOriginX:0,
-		rotateOriginX:0,
+		rotateOriginY:0,
 		scale:[1,1],
 		translate:[0,0],
+		textAlign:"start",
+		textBaseline:"alphabetic",
 		lineJoin:"round"
 	};
 }(window));//end
